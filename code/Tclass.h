@@ -6,7 +6,7 @@
 #define CELL 32	//Размер ячейки в бит
 #define MEM 256 // Количество ячеек памяти
 #define BMEM 8	// Количество бит на адрес памяти
-#define VER "1.5.3"
+#define VER "1.6.0"
 using std::bitset;
 
 class BRAIN
