@@ -1,14 +1,14 @@
 #include "Tclass.h"
+#include "CMS.h"
 #include <Windows.h>
 #include <cmath>
 using std::cout;
 using std::cin;
-using std::endl;
 using std::ifstream;
 using std::ofstream;
 
-
-int bin_to_int(bitset<CELL> data) // перевод двоичной в дес€тичную
+// перевод двоичной в дес€тичную
+int bin_to_int(bitset<CELL> data) 
 {
 	bitset<CELL-1> imp;
 	for (int i=0; i<CELL-1;i++)
@@ -16,23 +16,25 @@ int bin_to_int(bitset<CELL> data) // перевод двоичной в дес€тичную
 	if(data[CELL-1]==0)
 		return imp.to_ulong();
 	else
-	{
-		imp.flip();//получение дополнительного кода
+	{   //получение дополнительного кода
+		imp.flip();
 		return -imp.to_ulong()-1;
 	}	
 }
 
-bitset<CELL> int_to_bit(int data) // перевод дес€тичной в двоичную
+// перевод дес€тичной в двоичную
+bitset<CELL> int_to_bit(int data) 
 {
 	bitset<CELL> imp;
-	if (data < 0)//ситуаци€ отрицательности
+	if (data < 0) //ситуаци€ отрицательности
 		imp[CELL-1] = 1;
 	for (int i = CELL-2; i>=0; --i)
 		imp[i]=(int)((data>>i)&1);
 	return imp;
 }
 
-bitset<CELL> make_one(int com, int addr) // склеивание двух int в двоичный код
+// склеивание двух int в двоичный код
+bitset<CELL> make_one(int com, int addr) 
 {
 	bitset<CELL> imp; // переменна€ дл€ результата
 	bitset<CELL> B_com = int_to_bit(com); //двоичный код команды
@@ -49,6 +51,22 @@ BRAIN::BRAIN()
 {
 	RO=0;
 }
+
+MEMORY::MEMORY()
+{
+	for (int i = 0; i < MEM; i++)
+		for (int j = 0; j < CELL; j++)
+			TABLE[i][j]=0;
+		
+}
+
+CONTROL::CONTROL()
+{
+	CANT = 0;
+	for (int i = 0;i<CELL ;i++)
+		RC[i] = 0;
+}
+
 void BRAIN::write_RO(bitset<CELL> data)
 {
 	RO=data;
@@ -70,15 +88,6 @@ void BRAIN::showRO()
 	cout <<"\n";
 }
 
-
-MEMORY::MEMORY()
-{
-	for (int i = 0; i < MEM; i++)
-		for (int j = 0; j < CELL; j++)
-			TABLE[i][j]=0;
-		
-}
-
 void MEMORY::zero()
 {
 	for (int i = 0; i < MEM; i++)
@@ -96,12 +105,11 @@ bitset<CELL> MEMORY::get_cell(short addr)
 	return TABLE[addr];
 }
 
-
 //«аполнение RAM из файла
 void MEMORY::fill_ALL()
 {
 	ifstream fin("data\\memory.txt");
-		if (!fin) cout << "File failure" << endl;
+		if (!fin) cout << "File failure\n";
 //	bool tmp=0;
 	for (int i = 0; i < MEM; i++)
 		fin>>TABLE[i];	//чистый ввод	
@@ -111,7 +119,7 @@ void MEMORY::fill_ALL()
 void MEMORY::dump_ALL()
 {
 	ofstream fout("data\\memoryDUMP_bin.txt");
-		if (!fout) cout << "File failure" << endl;
+		if (!fout) cout << "File failure\n";
 	for (int i = 0; i < MEM; i++)
 		fout<<TABLE[i]<<"\n";	//чистый вывод
 	fout.close();
@@ -141,8 +149,6 @@ void MEMORY::show()
 	}
 }
 
-
-
 void MEMORY::show_cell(short addr)
 {
 	cout<<"["<<addr<<"]: ";
@@ -151,16 +157,8 @@ void MEMORY::show_cell(short addr)
 		cout << TABLE[addr][CELL-1-j];
 		if (j % 4 == 3)			
 			cout <<" ";
-						
 	}
 	cout <<"\n";
-}
-
-CONTROL::CONTROL()
-{
-	CANT = 0;
-	for (int i = 0;i<CELL ;i++)
-		RC[i] = 0;
 }
 
 //деление команды на наборы 
@@ -173,9 +171,6 @@ void CONTROL::cut_com(bitset<CELL-BMEM> &C, bitset<BMEM> &A)
 	for (int i = BMEM; i < CELL; i++)
 		C[i-BMEM] = RC[i];
 }
-
-
-
 
 void CPU::work()
 {	
@@ -224,8 +219,10 @@ void CPU::work()
 			UU.CANT=tmp; 
 			break;
 		case 3:	//три способа записи €чейки
-			cout<<"\n¬вод данных в €чейку\n";
-			cout<<"\n0 - ¬вести €чейку целиком в бинарном формате;\n1 - ¬вести число в дес€тичном формате;\n2 - ¬вести команду и операнд в дес€тичном формате\n";
+			cout<<"\n¬вод данных в €чейку\n\n";
+			cout<<"0 - ¬вести €чейку целиком в бинарном формате;\n";
+			cout<<"1 - ¬вести число в дес€тичном формате;\n";
+			cout<<"2 - ¬вести команду и операнд в дес€тичном формате\n";
 			cin>>menu2;
 			if (menu2 == 0)
 			{
@@ -316,71 +313,8 @@ void CPU::work()
 			menu = 666;
 			break;
 		}
-
 	} while (menu != 666);
-	
-
 	cout<<"–абота завершена \n";
-	
-}
-
-//—правочник команд
-/*
-–азр€дность пам€ти 8 бит - 256 €чеек
-–азр€дность €чеек 32 бит
-€чейка команды  <команда> [адрес]
-				0000 0000 0000 0000 0000 0000 [0000 0000]
-€чейка данных <метка знака> <31 бит под значение>
-				0000 0000 0000 0000 0000 0000 0000 0000
-1 бит флага
-<0> - 1 = отрицательное число 	CELL-1
-	
-*/
-namespace CMS // Ѕ»ЅЋ»ќ“≈ ј  ќћјЌƒ
-{
-// 0000	0000 0000 0000 0000 0001 [0000 0000]  
-//сложить €чейки RO и оп, сохранить в RO 			|	RO=RO+оп
-	const short PLUS = 1;
-
-// 0000	0000 0000 0000 0000 0010 [0000 0000]
-//вычесть €чейки RO и оп, сохранить в RO 			|	RO=RO-оп
-	const short MINUS = 2;
-
-// 0000	0000 0000 0000 0000 0011 [0000 0000]
-//умножить €чейки RO и оп, сохранить в RO   		|	RO=RO*оп
-	const short MULT = 3;
-
-// 0000 0000 0000 0000 0000 0100 [0000 0000]  
-// разделить €чейки RO и оп, сохранить в RO  		|	RO=RO/оп1 	
-	const short DIVIS = 4;
-
-// 0000 0000 0000 0000 0001 0101 [0000 0000]  
-// логическа€ операци€ RO » оп, сохранить в RO  	|	RO= RO && оп
-	const short AND = 21;
-
-// 0000 0000 0000 0000 0001 0110 [0000 0000]  
-// логическа€ операци€ RO »Ћ» оп, сохранить в RO  	|	RO= RO || оп
-	const short OR = 22;
-
-// 0000 0000 0000 0000 0001 0111 [0000 0000]  
-// логическа€ операци€ Ќ≈ оп, сохранить в RO  		|	RO= !оп
-	const short NOT = 23;
-
-// 0000 0000 0000 1111 1111 1001 [0000 0000]
-// перевести счЄтчик команд на €чейку		 		| оп в CANT 
-	const short JUMP = 4089;
-
-// 0000	0000 0000 1111 1111 1101 [0000 0000]
-// записать адрес из оп в регистр операндов 		| оп в RO	
-	const short LOAD = 4093;
-
-//0000 0000 0000 1111 1111 1110 [0000 0000]
-//записать адрес из регистра операндов в оп 		| RO в оп	
-	const short SAVE = 4094;
-
-// 0000 0000 0000 1111 1111 1111 [0000 0000]		| STOP
-// прекратить выполнение
-	const short STOP = 4095;
 }
 
 short CPU::compute()

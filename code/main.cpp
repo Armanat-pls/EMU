@@ -1,7 +1,6 @@
 #include "Tclass.h"
 #include <Windows.h>
 using std::cout;
-using std::cin;
 
 int main()
 {
