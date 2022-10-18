@@ -1,7 +1,7 @@
 import java.util.BitSet;
 public class Tclass extends CMS {
 
-    public static String show_bitset(BitSet data)   //функция вывода набора битов в строку
+    public static String show_bitset(BitSet data)   //С„СѓРЅРєС†РёСЏ РІС‹РІРѕРґР° РЅР°Р±РѕСЂР° Р±РёС‚РѕРІ РІ СЃС‚СЂРѕРєСѓ
     {
         String S = "";
         for (int i = CELL - 1; i >= 0; i--)
@@ -17,11 +17,11 @@ public class Tclass extends CMS {
     }
 
 
-    static class BRAIN{ //АЛУ
+    static class BRAIN{ //РђР›РЈ
 
-        private BitSet RO; //Аккумулятор, на одну ячейку
+        private BitSet RO; //РђРєРєСѓРјСѓР»СЏС‚РѕСЂ, РЅР° РѕРґРЅСѓ СЏС‡РµР№РєСѓ
         
-        public BRAIN(){ //конструктор
+        public BRAIN(){ //РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
             RO = new BitSet(CELL);
         }
 
@@ -29,20 +29,20 @@ public class Tclass extends CMS {
             RO = data;
         }
 
-        BitSet get_RO(){         //получение регистра
+        BitSet get_RO(){         //РїРѕР»СѓС‡РµРЅРёРµ СЂРµРіРёСЃС‚СЂР°
             return RO;
         }
 
-        String showRO(){		//вывод регистра
+        String showRO(){		//РІС‹РІРѕРґ СЂРµРіРёСЃС‚СЂР°
             return show_bitset(RO);
         }
     }
 
-    static class MEMORY{    //память
+    static class MEMORY{    //РїР°РјСЏС‚СЊ
 
-        private BitSet[] TABLE; //массив ячеек памяти
+        private BitSet[] TABLE; //РјР°СЃСЃРёРІ СЏС‡РµРµРє РїР°РјСЏС‚Рё
 
-        public MEMORY(){    //конструктор
+        public MEMORY(){    //РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
             TABLE = new BitSet[MEM];
             for (int i = 0; i < MEM; i++)
                 TABLE[i] = new BitSet(CELL);
@@ -73,7 +73,7 @@ public class Tclass extends CMS {
             CANT = 0;
             RC = new BitSet(CELL);
             for(int i = 0; i < CELL; i++)
-                RC.clear(i);  //явное выставление длинны CELL и заполнение нулями
+                RC.clear(i);  //СЏРІРЅРѕРµ РІС‹СЃС‚Р°РІР»РµРЅРёРµ РґР»РёРЅРЅС‹ CELL Рё Р·Р°РїРѕР»РЅРµРЅРёРµ РЅСѓР»СЏРјРё
         }
     }
 }

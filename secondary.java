@@ -1,28 +1,28 @@
 import java.util.BitSet;
 public class secondary extends Tclass {
 
-    BRAIN ALU = new BRAIN();
-    MEMORY RAM = new MEMORY();
-    CONTROL UU = new CONTROL();
+    public static BRAIN ALU = new BRAIN();
+    public static MEMORY RAM = new MEMORY();
+    public static CONTROL UU = new CONTROL();
 
  
-    // перевод двоичной в десятичную целое
+    // РїРµСЂРµРІРѕРґ РґРІРѕРёС‡РЅРѕР№ РІ РґРµСЃСЏС‚РёС‡РЅСѓСЋ С†РµР»РѕРµ
     public static int bit_to_int(BitSet data) 
     {
         if (data.get(CELL - 1))
         {
-            data.flip(0, CELL); //получение дополнительного кода
+            data.flip(0, CELL); //РїРѕР»СѓС‡РµРЅРёРµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ РєРѕРґР°
             return -(int)data.toLongArray()[0] - 1;
         }
         else
             return (int)data.toLongArray()[0];   
     }
     
-    // перевод десятичной в двоичную целое
+    // РїРµСЂРµРІРѕРґ РґРµСЃСЏС‚РёС‡РЅРѕР№ РІ РґРІРѕРёС‡РЅСѓСЋ С†РµР»РѕРµ
     public static BitSet int_to_bit(int data) 
     {
         BitSet imp = new BitSet(CELL);
-        if (data < 0) //ситуация отрицательности
+        if (data < 0) //СЃРёС‚СѓР°С†РёСЏ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕСЃС‚Рё
             imp.set(CELL - 1);
         for (int i = CELL-2; i>=0; --i)
         {
@@ -34,20 +34,20 @@ public class secondary extends Tclass {
         return imp;
     }
 
-    //перевод float в двоичный вид
+    //РїРµСЂРµРІРѕРґ float РІ РґРІРѕРёС‡РЅС‹Р№ РІРёРґ
 	public static BitSet float_to_bit(float data)
 	{
-		//при попытке перевода чисел без дробной части, кодировка упоротая, но правильная
+		//РїСЂРё РїРѕРїС‹С‚РєРµ РїРµСЂРµРІРѕРґР° С‡РёСЃРµР» Р±РµР· РґСЂРѕР±РЅРѕР№ С‡Р°СЃС‚Рё, РєРѕРґРёСЂРѕРІРєР° СѓРїРѕСЂРѕС‚Р°СЏ, РЅРѕ РїСЂР°РІРёР»СЊРЅР°СЏ
 		BitSet imp = new BitSet(CELL);
 
-        if (data > 0) //запоминание знака числа + = 0; - = 1
+        if (data > 0) //Р·Р°РїРѕРјРёРЅР°РЅРёРµ Р·РЅР°РєР° С‡РёСЃР»Р° + = 0; - = 1
             imp.clear(CELL - 1);
         else
             imp.set(CELL - 1);
 
 		data = Math.abs(data);
-		int ex = 0;	//порядок
-		if (data >= 1.0)	//при числах >1 порядок растёт
+		int ex = 0;	//РїРѕСЂСЏРґРѕРє
+		if (data >= 1.0)	//РїСЂРё С‡РёСЃР»Р°С… >1 РїРѕСЂСЏРґРѕРє СЂР°СЃС‚С‘С‚
 		{
 			while (data > 2.0)
 			{
@@ -55,7 +55,7 @@ public class secondary extends Tclass {
 				ex++;
 			}
 		}
-		else	//при числах <1 порядок убывает
+		else	//РїСЂРё С‡РёСЃР»Р°С… <1 РїРѕСЂСЏРґРѕРє СѓР±С‹РІР°РµС‚
 		{
 			while (data < 1.0)
 			{
@@ -64,17 +64,17 @@ public class secondary extends Tclass {
 			}
 		}
 
-		ex += 127; //смещение порядка на 127, для удобного хранения отрицательных
+		ex += 127; //СЃРјРµС‰РµРЅРёРµ РїРѕСЂСЏРґРєР° РЅР° 127, РґР»СЏ СѓРґРѕР±РЅРѕРіРѕ С…СЂР°РЅРµРЅРёСЏ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С…
 
         BitSet tempEx = new BitSet(CELL);
-		tempEx = int_to_bit(ex); //временный набор для хранения двоичного порядка
+		tempEx = int_to_bit(ex); //РІСЂРµРјРµРЅРЅС‹Р№ РЅР°Р±РѕСЂ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РґРІРѕРёС‡РЅРѕРіРѕ РїРѕСЂСЏРґРєР°
 		for (int i = 0; i < 8; i++)
             if (tempEx.get(i))
                 imp.set(CELL - 9 + i);
-		//  imp[CELL - 9 + i] = tempEx[i];	//запись порядка
+		//  imp[CELL - 9 + i] = tempEx[i];	//Р·Р°РїРёСЃСЊ РїРѕСЂСЏРґРєР°
 
-		data -= (float)1.0; // от нормализованной мантисы, отсекаем целую единицу
-		float tmp; //временное хранилище удвоенной мантисы
+		data -= (float)1.0; // РѕС‚ РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕР№ РјР°РЅС‚РёСЃС‹, РѕС‚СЃРµРєР°РµРј С†РµР»СѓСЋ РµРґРёРЅРёС†Сѓ
+		float tmp; //РІСЂРµРјРµРЅРЅРѕРµ С…СЂР°РЅРёР»РёС‰Рµ СѓРґРІРѕРµРЅРЅРѕР№ РјР°РЅС‚РёСЃС‹
 		for (int i = 0; i < 23; i++)
 		{
 			tmp = data * (float)2.0;
@@ -94,16 +94,16 @@ public class secondary extends Tclass {
 		return imp;
 	}
 
-    //перевод двоичного вида во float
+    //РїРµСЂРµРІРѕРґ РґРІРѕРёС‡РЅРѕРіРѕ РІРёРґР° РІРѕ float
     public static float bit_to_float(BitSet data)
 	{
-		boolean sign_neagative = (data.get(CELL - 1)); //false - положительное ; true - отрицательное
+		boolean sign_neagative = (data.get(CELL - 1)); //false - РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ ; true - РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРµ
         BitSet tempEx = new BitSet(CELL);
 		for (int i = 0; i < 8; i++)
             if (data.get(CELL - 9 + i))
 			    tempEx.set(i);
 
-		int ex = bit_to_int(tempEx) - 127; //получение десятичного порядка и смещение
+		int ex = bit_to_int(tempEx) - 127; //РїРѕР»СѓС‡РµРЅРёРµ РґРµСЃСЏС‚РёС‡РЅРѕРіРѕ РїРѕСЂСЏРґРєР° Рё СЃРјРµС‰РµРЅРёРµ
 		float imp = (float)1.0;
         int bool_to_int = 0;
 		for (int i = 0; i < 23; i++)
@@ -112,21 +112,21 @@ public class secondary extends Tclass {
             imp += bool_to_int * Math.pow(2, -i - 1);
         }
 		imp = (float)Math.pow(2.0, ex) * imp;
-		if (sign_neagative) imp *= -1.0; //сделать отрицательным при необходимости
+		if (sign_neagative) imp *= -1.0; //СЃРґРµР»Р°С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рј РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё
 
 		return imp;
 	}
 
 
-    // склеивание двух int в двоичный код
+    // СЃРєР»РµРёРІР°РЅРёРµ РґРІСѓС… int РІ РґРІРѕРёС‡РЅС‹Р№ РєРѕРґ
     public static BitSet make_one(int com, int addr)
     {
-        BitSet imp = new BitSet(CELL); // переменная для результата
+        BitSet imp = new BitSet(CELL); // РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ СЂРµР·СѓР»СЊС‚Р°С‚Р°
         BitSet B_com = new BitSet(CELL);
-        B_com = int_to_bit(com); //двоичный код команды
+        B_com = int_to_bit(com); //РґРІРѕРёС‡РЅС‹Р№ РєРѕРґ РєРѕРјР°РЅРґС‹
         BitSet B_addr = new BitSet(CELL);
-        B_addr = int_to_bit(addr); //двоичный код адреса ячейки
-        for (int i = 0; i < BMEM;i++) //склейка
+        B_addr = int_to_bit(addr); //РґРІРѕРёС‡РЅС‹Р№ РєРѕРґ Р°РґСЂРµСЃР° СЏС‡РµР№РєРё
+        for (int i = 0; i < BMEM;i++) //СЃРєР»РµР№РєР°
             if (B_addr.get(i))
                 imp.set(i);
             //imp[i] = B_addr[i];
@@ -139,12 +139,12 @@ public class secondary extends Tclass {
  
     public static BitSet[] cut_com(BitSet data)
     {
-        //        BitSet[] coms = cut_com(bastard) вызов деления
-        //        coms[0].toLongArray()[0]  //операция
-        //        coms[1].toLongArray()[0]  // адрес
+        //        BitSet[] coms = cut_com(bastard) РІС‹Р·РѕРІ РґРµР»РµРЅРёСЏ
+        //        coms[0].toLongArray()[0]  //РѕРїРµСЂР°С†РёСЏ
+        //        coms[1].toLongArray()[0]  // Р°РґСЂРµСЃ
         
         
-        BitSet[] imp;   //массив с двумя кусками команд
+        BitSet[] imp;   //РјР°СЃСЃРёРІ СЃ РґРІСѓРјСЏ РєСѓСЃРєР°РјРё РєРѕРјР°РЅРґ
         imp = new BitSet[2];
         imp[0] = new BitSet(CELL);
         imp[1] = new BitSet(CELL);
