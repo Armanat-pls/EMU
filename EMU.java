@@ -4,20 +4,53 @@ import javax.swing.*;
 public class EMU extends secondary{  
 
     static class UI extends JFrame {
-        private JButton button = new JButton("Press");
+        //кнопки 
+        private JButton button_set_CANT = new JButton("Установить счётчик");
+        private JButton button_1cell = new JButton("Выполнить текущую ячейку");
+        private JButton button_runALL = new JButton("Выполнить программу");
+
+        //поле вывода СЧАК
+        private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
+        private JTextField textBox_CANT = new JTextField();
+        private JTextField textBox_CURcell = new JTextField();
+
+        //поле вывода АЛУ
+        private JLabel label_ALU_out = new JLabel("Регистр АЛУ");
+        private JTextField textBox_RO = new JTextField();
+        private JTextField textBox_ALU = new JTextField();
+
+        //Список RAM
+        private JLabel label_RAM_list = new JLabel("RAM");
+        private JList list_RAM = new JList<String>();
+
+        //Выборщик ячейки
+        private JLabel label_RAM_chooser = new JLabel("Выбор ячейки");
+        private JSpinner RAM_choser = new JSpinner();
+
+/* 
         private JTextField input = new JTextField("", 5);
-        private JLabel label = new JLabel("Input:");
+        
         private JRadioButton radio1 = new JRadioButton("Select this");
         private JRadioButton radio2 = new JRadioButton("Select that");
         private JCheckBox check = new JCheckBox("Check", false);
-        
+*/   
         public UI() {
             super("Учебный эмулятор ЭВМ " + VER);
-            this.setBounds(100,100,250,100);
+            this.setBounds(100,100,900,675);
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    
+
             Container container = this.getContentPane();
-            container.setLayout(new GridLayout(3,2,2,2));
+            container.setLayout(new GridLayout(2,2,2,2));
+            container.add(label_CANT_out);
+            container.add(textBox_CANT);
+            container.add(textBox_CURcell);
+
+            //this.add("label_CANT_OUT", label);
+
+
+            /* 
+            Container container = this.getContentPane();
+            container.setLayout(new GridLayout(6,2,2,2));
             container.add(label);
             container.add(input);
     
@@ -31,8 +64,11 @@ public class EMU extends secondary{
             container.add(check);
             button.addActionListener(new ButtonEventListener());
             container.add(button);
+            */
+            
         }
-        
+
+        /*
         class ButtonEventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 String message = "";
@@ -47,7 +83,7 @@ public class EMU extends secondary{
                         "Output",
                         JOptionPane.PLAIN_MESSAGE);
             }
-        }
+        }*/
     }
     public static void main(String[] args) {
 		UI app = new UI();
