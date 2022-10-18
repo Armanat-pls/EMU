@@ -1,6 +1,7 @@
-public class EMU {
-
+public class EMU extends secondary{   
     public static void main(String[] args){
-        System.out.println("Hello Wolrd");
+
+  
     }
 }
+
