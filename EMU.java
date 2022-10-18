@@ -40,11 +40,34 @@ public class EMU extends secondary{
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
             Container container = this.getContentPane();
-            container.setLayout(new GridLayout(2,2,2,2));
+            container.setLayout(null);
+            label_CANT_out.setBounds(10,0, 365, 55);
+            textBox_CANT.setBounds(10,40, 60, 25);
+            textBox_CANT.setEditable(false);
+            textBox_CURcell.setBounds(80,40, 300, 25);
+            textBox_CURcell.setEditable(false);
             container.add(label_CANT_out);
             container.add(textBox_CANT);
             container.add(textBox_CURcell);
+            textBox_CANT.setText("[" + UU.CANT + "]");
+            textBox_CURcell.setText(RAM.show_cell(UU.CANT));
 
+
+            label_ALU_out.setBounds(10,60, 365, 55);
+            textBox_RO.setBounds(10,100, 60, 25);
+            textBox_RO.setEditable(false);
+            textBox_ALU.setBounds(80,100, 300, 25);
+            textBox_ALU.setEditable(false);
+            container.add(label_ALU_out);
+            container.add(textBox_RO);
+            container.add(textBox_ALU);
+            textBox_RO.setText("[RO]");
+            textBox_ALU.setText(ALU.showRO());
+
+
+
+                    //поле вывода АЛУ
+            
             //this.add("label_CANT_OUT", label);
 
 
