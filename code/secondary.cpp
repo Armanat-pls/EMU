@@ -8,7 +8,7 @@ using std::ifstream;
 using std::ofstream;
 
 // перевод двоичной в десятичную
-int bin_to_int(bitset<CELL> data) 
+int bit_to_int(bitset<CELL> data) 
 {
 	bitset<CELL-1> imp;
 	for (int i=0; i<CELL-1;i++)
@@ -32,6 +32,76 @@ bitset<CELL> int_to_bit(int data)
 		imp[i]=(int)((data>>i)&1);
 	return imp;
 }
+
+	//перевод float в двоичный вид
+	bitset<CELL> float_to_bit(float data)
+	{
+		//при попытке перевода чисел без дробной части, кодировка упоротая, но правильная
+		bitset<CELL> imp;
+		(data > 0) ? imp[CELL - 1] = 0 : imp[CELL - 1] = 1; //запоминание знака числа + = 0; - = 1
+		data = fabs(data);
+		int ex = 0;	//порядок
+		if (data >= 1.0)	//при числах >1 порядок растёт
+		{
+			while (data > 2.0)
+			{
+				data /= 2.0;
+				ex++;
+			}
+		}
+		else	//при числах <1 порядок убывает
+		{
+			while (data < 1.0)
+			{
+				data *= 2.0;
+				ex--;
+			}
+		}
+
+		ex += 127; //смещение порядка на 127, для удобного хранения отрицательных
+
+		bitset<CELL> tempEx = int_to_bit(ex); //временный набор для хранения двоичного порядка
+		for (int i = 0; i < 8; i++)
+			imp[CELL - 9 + i] = tempEx[i];	//запись порядка
+
+		data -= 1.0; // от нормализованной мантисы, отсекаем цеулую единицу
+		float tmp; //временное хранилище удвоенной мантисы
+		for (int i = 0; i < 23; i++)
+		{
+			tmp = data * 2.0;
+			if (tmp > 1.0)
+			{
+				imp[CELL - 10 - i] = 1;
+				data = (tmp - 1.0);
+			}
+			else
+			{
+				imp[CELL - 10 - i] = 0;
+				data = tmp;
+			}
+		}
+		return imp;
+	}
+
+
+	//перевод двоичного вида во float
+	float bit_to_float(bitset<CELL> data)
+	{
+		bool sign_neagative = (data[CELL - 1] == 1); //false - положительное ; true - отрицательное
+		bitset<CELL> tempEx; //временное хранилище двоичного порядка
+		for (int i = 0; i < 8; i++)
+			tempEx[i] = data[CELL - 9 + i]; //извлечение двоичного порядка
+
+		int ex = bit_to_int(tempEx) - 127; //получение десятичного порядка и смещение
+		float imp = 1.0;
+		for (int i = 0; i < 23; i++)
+			imp += data[CELL - 10 - i] * pow(2, -i - 1);
+		imp = pow(2, ex) * imp;
+		if (sign_neagative) imp *= -1.0; //сделать отрицательным при необходимости
+
+		return imp;
+	}
+
 
 // склеивание двух int в двоичный код
 bitset<CELL> make_one(int com, int addr) 
@@ -325,8 +395,8 @@ short CPU::compute()
 	if (C.to_ulong() == CMS::STOP)
 		return 666;
 	int op1, op2, res;
-	op1 = bin_to_int(ALU.get_RO());
-	op2 = bin_to_int(RAM.get_cell(A.to_ulong()));
+	op1 = bit_to_int(ALU.get_RO());
+	op2 = bit_to_int(RAM.get_cell(A.to_ulong()));
 	switch (C.to_ulong())
 	{
 	case CMS::JUMP:
