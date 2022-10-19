@@ -50,6 +50,7 @@ public class EMU extends secondary{
         private JRadioButton Rbutton_RAN_Cell_cng_clean = new JRadioButton("Прямой ввод");
         private JRadioButton Rbutton_RAN_Cell_cng_comm = new JRadioButton("Команда");
         private JRadioButton Rbutton_RAN_Cell_cng_data = new JRadioButton("Данные");
+        private JCheckBox checkBox_writetoALU = new JCheckBox("Запись в регистр АЛУ", false);
 
         //чистая запись
         private JTextField textBox_ram_write_clean = new JTextField();
@@ -58,13 +59,17 @@ public class EMU extends secondary{
 
         //запись команды
         private JTextField textBox_ram_write_comm_c = new JTextField();
-        private JTextField textBox_ram_write_comm_addr = new JTextField();
+        private JSpinner spiner_ram_write_com_addr = new JSpinner(new SpinnerNumberModel(0, 0, MEM - 1, 1));
         private JLabel label_comwrite_msg = new JLabel("Команда; адрес операнда");
         private JButton btn_ramwrite_coms = new JButton("Ввод"); 
 
-
-
-        private JCheckBox checkBox_writetoALU = new JCheckBox("Запись в регистр АЛУ", false);
+        //запись данных
+        private JTextField textBox_ram_write_data = new JTextField();
+        private JLabel label_datawrite_msg = new JLabel("Десятичное число");
+        private JButton btn_ramwrite_data = new JButton("Ввод"); 
+        private JRadioButton rBut_type_int = new JRadioButton("integer");
+        private JRadioButton rBut_type_float = new JRadioButton("float");
+        
 
         public UI() {
             super("Учебный эмулятор ЭВМ " + VER);
@@ -167,27 +172,30 @@ public class EMU extends secondary{
             baseX = 400;
             baseY = 120;
             label_RAM_in.setBounds(baseX, baseY, 200, 25);
-            Rbutton_RAN_Cell_cng_clean.setBounds(baseX + 20, 150, 120,25);
-            Rbutton_RAN_Cell_cng_comm.setBounds(baseX + 20, 180, 120,25);
-            Rbutton_RAN_Cell_cng_data.setBounds(baseX + 20, 210, 120,25);
-            checkBox_writetoALU.setBounds(baseX + 20, 240, 200, 25);
+            Rbutton_RAN_Cell_cng_clean.setBounds(baseX + 20, baseY + 30, 120,25);
+            Rbutton_RAN_Cell_cng_comm.setBounds(baseX + 20, baseY + 60, 120,25);
+            Rbutton_RAN_Cell_cng_data.setBounds(baseX + 20, baseY + 90, 120,25);
+            checkBox_writetoALU.setBounds(baseX + 20, baseY + 120, 200, 25);
 
 
             //поля чистого ввода
-            textBox_ram_write_clean.setBounds(540, 150, 300, 25);
-            label_cleanwrite_msg.setBounds(580, 175, 260, 25);
-            btn_ramwrite_clean.setBounds(640, 200, 80, 25);
+            textBox_ram_write_clean.setBounds(baseX + 140, baseY + 30, 300, 25);
+            label_cleanwrite_msg.setBounds(baseX + 180, baseY + 55, 260, 25);
+            btn_ramwrite_clean.setBounds(baseX + 240, baseY + 80, 80, 25);
 
-/*
+
             //поля ввода команды
-            textBox_ram_write_comm_c
-            textBox_ram_write_comm_addr
-            label_comwrite_msg
-            btn_ramwrite_coms
-*/
+            textBox_ram_write_comm_c.setBounds(baseX + 180, baseY + 30, 150, 25);
+            spiner_ram_write_com_addr.setBounds(baseX + 340, baseY + 30, 60, 25);
+            label_comwrite_msg.setBounds(baseX + 220, baseY + 55, 260, 25);
+            btn_ramwrite_coms.setBounds(baseX + 240, baseY + 80, 80, 25);
+
             //поля ввода данных
-
-
+            textBox_ram_write_data.setBounds(baseX + 180, baseY + 30, 170, 25);
+            label_datawrite_msg.setBounds(baseX + 220, baseY + 55, 200, 25);
+            btn_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
+            rBut_type_int.setBounds(baseX + 360, baseY + 30, 70, 20);
+            rBut_type_float.setBounds(baseX + 360, baseY + 60, 70, 20);
 
 
             //радиокнопки ввода
@@ -196,6 +204,11 @@ public class EMU extends secondary{
             group_Rbutton_RAM_in.add(Rbutton_RAN_Cell_cng_comm);
             group_Rbutton_RAM_in.add(Rbutton_RAN_Cell_cng_data);
             Rbutton_RAN_Cell_cng_clean.setSelected(true);
+
+            ButtonGroup group_Rbutton_RAM_in_data = new ButtonGroup();
+            group_Rbutton_RAM_in_data.add(rBut_type_int);
+            group_Rbutton_RAM_in_data.add(rBut_type_float);
+            rBut_type_int.setSelected(true);
 
             //обработчики событий радиокнопок ввода
             Rbutton_RAN_Cell_cng_clean.addItemListener(new ItemListener() {
@@ -218,20 +231,54 @@ public class EMU extends secondary{
                 public void itemStateChanged(ItemEvent e) {     
                     if (e.getStateChange() == 1)
                     {
-                        textBox_ram_write_clean.setVisible(true);
-                        label_cleanwrite_msg.setVisible(true);
-                        btn_ramwrite_clean.setVisible(true);
+                        textBox_ram_write_comm_c.setVisible(true);
+                        spiner_ram_write_com_addr.setVisible(true);
+                        label_comwrite_msg.setVisible(true);
+                        btn_ramwrite_coms.setVisible(true);
                     }
                     else
                     {
-                        textBox_ram_write_clean.setVisible(false);
-                        label_cleanwrite_msg.setVisible(false);
-                        btn_ramwrite_clean.setVisible(false);
+                        textBox_ram_write_comm_c.setVisible(false);
+                        spiner_ram_write_com_addr.setVisible(false);
+                        label_comwrite_msg.setVisible(false);
+                        btn_ramwrite_coms.setVisible(false);
                     }
                 }           
-             });
+            });
+            Rbutton_RAN_Cell_cng_data.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent e) {     
+                    if (e.getStateChange() == 1)
+                    {
+                        textBox_ram_write_data.setVisible(true);
+                        label_datawrite_msg.setVisible(true);
+                        btn_ramwrite_data.setVisible(true);
+                        rBut_type_int.setVisible(true);
+                        rBut_type_float.setVisible(true);
+                    }
+                    else
+                    {
+                        textBox_ram_write_data.setVisible(false);
+                        label_datawrite_msg.setVisible(false);
+                        btn_ramwrite_data.setVisible(false);
+                        rBut_type_int.setVisible(false);
+                        rBut_type_float.setVisible(false);
+                    }
+                }           
+            });
 
 
+
+    
+            textBox_ram_write_comm_c.setVisible(false);
+            spiner_ram_write_com_addr.setVisible(false);
+            label_comwrite_msg.setVisible(false);
+            btn_ramwrite_coms.setVisible(false);
+
+            textBox_ram_write_data.setVisible(false);
+            label_datawrite_msg.setVisible(false);
+            btn_ramwrite_data.setVisible(false);
+            rBut_type_int.setVisible(false);
+            rBut_type_float.setVisible(false);
 
 
 //======================================================
@@ -266,6 +313,15 @@ public class EMU extends secondary{
             container.add(textBox_ram_write_clean);
             container.add(label_cleanwrite_msg);
             container.add(btn_ramwrite_clean);
+            container.add(textBox_ram_write_comm_c);
+            container.add(spiner_ram_write_com_addr);
+            container.add(label_comwrite_msg);
+            container.add(btn_ramwrite_coms);
+            container.add(textBox_ram_write_data);
+            container.add(label_datawrite_msg);
+            container.add(btn_ramwrite_data);
+            container.add(rBut_type_int);
+            container.add(rBut_type_float);
             
             refreshUI();                 
         }
@@ -381,8 +437,6 @@ public class EMU extends secondary{
             textBox_RAM_out_com_1.setText("" + C);
             textBox_RAM_out_com_2.setText("" + A);
         }
-        
-
     }
     public static void main(String[] args) {
 		UI app = new UI();
