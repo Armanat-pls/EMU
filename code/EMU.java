@@ -4,13 +4,16 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import javafx.scene.layout.Border;
+import javafx.event.ActionEvent.*;
+
 public class EMU extends secondary{  
 
     static class UI extends JFrame {
         //кнопки 
-        private JButton button_set_CANT = new JButton("Установить счётчик");
+        private JButton button_set_CANT = new JButton("<html>Установить<p>Счётчик</html>"); 
         private JButton button_1cell = new JButton("Выполнить текущую ячейку");
         private JButton button_runALL = new JButton("Выполнить программу");
 
@@ -75,11 +78,8 @@ public class EMU extends secondary{
             
             label_RAM_list.setBounds(10,120, 365, 55);
             list_RAM_tmp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            list_RAM_tmp.addListSelectionListener(new ListSelectionListener() {
+            list_RAM_tmp.addListSelectionListener(new ListSelectionListener() { //ИЗМЕНЕНИЕ ВЫБРАННОЙ ЯЧЕЙКИ В СПИСКЕ
                 public void valueChanged(ListSelectionEvent e){
-                    //Object element = list_RAM_tmp.getSelectedValue();
-                    //label_RAM_list.setText(element.toString());
-                    label_RAM_list.setText("" + list_RAM_tmp.getSelectedIndex());
                     RAM_choser.setValue(list_RAM_tmp.getSelectedIndex());
                 }
             });
@@ -88,20 +88,16 @@ public class EMU extends secondary{
             container.add(list_RAM_final);
 
 
-
-
-
-
             label_RAM_chooser.setBounds(420, 15, 90, 30);
             RAM_choser.setBounds(420, 40, 75, 30);
+            RAM_choser.addChangeListener(new RAM_chooser_Listener());
             container.add(label_RAM_chooser);
             container.add(RAM_choser);
 
 
-
-
-
-
+            button_set_CANT.setBounds(545, 15, 100, 65);
+            button_set_CANT.addActionListener(new Button_SETCANT_EventListener());
+            container.add(button_set_CANT);
 
 
             refreshUI();     
@@ -117,12 +113,35 @@ public class EMU extends secondary{
 
             container.add(radio2);
             container.add(check);
-            button.addActionListener(new ButtonEventListener());
+            
             container.add(button);
             */
             
         }
 
+        //КНОПКА ВЫСТАВЛЕНИЯ СЧАК
+        class Button_SETCANT_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    UU.CANT = (int)RAM_choser.getValue();
+                }
+                catch (Throwable t)
+                {
+                    JOptionPane.showMessageDialog(null, "Ошибка ввода счётчика", "Eroor", JOptionPane.PLAIN_MESSAGE);
+                }
+                refreshUI();
+            }
+        }
+
+        //СОБЫТИЕ ВЫБОРА ЯЧЕЙКИ СПИНЕРОМ (выделеняет ячейку в списке)
+        class RAM_chooser_Listener implements ChangeListener {
+            public void stateChanged(ChangeEvent evt) {
+               list_RAM_tmp.setSelectedIndex((int)RAM_choser.getValue());
+               refresh_RAM_out();
+            }
+         }
+
+        //ПЕРЕЗАГРУЗКА UI
         private void refreshUI(){
             textBox_CANT.setText("[" + UU.CANT + "]");
             textBox_CURcell.setText(RAM.show_cell(UU.CANT));
@@ -140,30 +159,13 @@ public class EMU extends secondary{
                 S += RAM.show_cell(i);
                 listRAM.addElement(S);
             }
+            list_RAM_tmp.setSelectedIndex(UU.CANT);
         }
-
+        
+        //ПЕРЕЗАГРУЗКА ПОЛЕЙ ВЫВОДА RAM
         private void refresh_RAM_out(){
-            BitSet[] coms = cut_com(RAM.get_cell(0));  //вызов деления
-            int C = (int)coms[0].toLongArray()[0];
-            int A = (int)coms[1].toLongArray()[0];
+        label_RAM_list.setText("" + list_RAM_tmp.getSelectedIndex());
         }
-
-        /*
-        class ButtonEventListener implements ActionListener {
-            public void actionPerformed(ActionEvent e) {
-                String message = "";
-                message += "Button was pressed\n";
-                message += "Text is " + input.getText() + "\n";
-                message += (radio1.isSelected()?"Radio #1":"Radio #2") 
-                                    + " is selected\n"; 
-                message += "CheckBox is " + ((check.isSelected())
-                                    ?"checked":"unchecked"); 
-                JOptionPane.showMessageDialog(null,
-                        message,
-                        "Output",
-                        JOptionPane.PLAIN_MESSAGE);
-            }
-        }*/
     }
     public static void main(String[] args) {
 		UI app = new UI();
