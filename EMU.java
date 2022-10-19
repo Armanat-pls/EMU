@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import javafx.scene.layout.Border;
 public class EMU extends secondary{  
 
     static class UI extends JFrame {
@@ -21,11 +23,15 @@ public class EMU extends secondary{
 
         //Список RAM
         private JLabel label_RAM_list = new JLabel("RAM");
-        private JList list_RAM = new JList<String>();
+        private DefaultListModel dlm = new DefaultListModel<String>();
+        private JList list_RAM_tmp = new JList<String>(dlm);
+        private JScrollPane listRAM = new JScrollPane(list_RAM_tmp);
+
 
         //Выборщик ячейки
         private JLabel label_RAM_chooser = new JLabel("Выбор ячейки");
         private JSpinner RAM_choser = new JSpinner();
+
 
 /* 
         private JTextField input = new JTextField("", 5);
@@ -41,28 +47,38 @@ public class EMU extends secondary{
 
             Container container = this.getContentPane();
             container.setLayout(null);
+
             label_CANT_out.setBounds(10,0, 365, 55);
             textBox_CANT.setBounds(10,40, 60, 25);
-            textBox_CANT.setEditable(false);
             textBox_CURcell.setBounds(80,40, 300, 25);
-            textBox_CURcell.setEditable(false);
+            
             container.add(label_CANT_out);
             container.add(textBox_CANT);
             container.add(textBox_CURcell);
-            textBox_CANT.setText("[" + UU.CANT + "]");
-            textBox_CURcell.setText(RAM.show_cell(UU.CANT));
-
-
+            
             label_ALU_out.setBounds(10,60, 365, 55);
             textBox_RO.setBounds(10,100, 60, 25);
-            textBox_RO.setEditable(false);
             textBox_ALU.setBounds(80,100, 300, 25);
-            textBox_ALU.setEditable(false);
+            
             container.add(label_ALU_out);
             container.add(textBox_RO);
             container.add(textBox_ALU);
+            
+            textBox_CANT.setEditable(false);
+            textBox_CURcell.setEditable(false);
+            textBox_RO.setEditable(false);
+            textBox_ALU.setEditable(false);
+
             textBox_RO.setText("[RO]");
-            textBox_ALU.setText(ALU.showRO());
+            
+            label_RAM_list.setBounds(10,120, 365, 55);
+            listRAM.setBounds(10,160, 370, 430);
+            container.add(label_RAM_list);
+            container.add(listRAM);
+
+
+            //private JList list_RAM = new JList<String>();
+
 
 
 
@@ -89,6 +105,16 @@ public class EMU extends secondary{
             container.add(button);
             */
             
+        }
+
+        public void refreshUI(){
+            textBox_CANT.setText("[" + UU.CANT + "]");
+            textBox_CURcell.setText(RAM.show_cell(UU.CANT));
+            textBox_ALU.setText(ALU.showRO());
+            listRAM.removeAll();
+            
+            //for (int i = 0; i < MEM)
+
         }
 
         /*
