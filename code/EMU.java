@@ -108,11 +108,7 @@ public class EMU extends secondary{
             baseY = 120;
             label_RAM_list.setBounds(baseX, baseY, 365, 55);
             list_RAM_tmp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            list_RAM_tmp.addListSelectionListener(new ListSelectionListener() { //ИЗМЕНЕНИЕ ВЫБРАННОЙ ЯЧЕЙКИ В СПИСКЕ
-                public void valueChanged(ListSelectionEvent e){
-                    RAM_choser.setValue(list_RAM_tmp.getSelectedIndex());
-                }
-            });
+            list_RAM_tmp.addListSelectionListener(new listRAM_Listener());
             list_RAM_final.setBounds(baseX, baseY + 40 , 370, 430);
 
 
@@ -182,6 +178,7 @@ public class EMU extends secondary{
             textBox_ram_write_clean.setBounds(baseX + 140, baseY + 30, 300, 25);
             label_cleanwrite_msg.setBounds(baseX + 180, baseY + 55, 260, 25);
             btn_ramwrite_clean.setBounds(baseX + 240, baseY + 80, 80, 25);
+            btn_ramwrite_clean.addActionListener(new btn_ramwrite_clean_EventListener());
 
 
             //поля ввода команды
@@ -189,13 +186,15 @@ public class EMU extends secondary{
             spiner_ram_write_com_addr.setBounds(baseX + 340, baseY + 30, 60, 25);
             label_comwrite_msg.setBounds(baseX + 220, baseY + 55, 260, 25);
             btn_ramwrite_coms.setBounds(baseX + 240, baseY + 80, 80, 25);
+            btn_ramwrite_coms.addActionListener(new btn_ramwrite_coms_EventListener());
 
             //поля ввода данных
             textBox_ram_write_data.setBounds(baseX + 180, baseY + 30, 170, 25);
             label_datawrite_msg.setBounds(baseX + 220, baseY + 55, 200, 25);
-            btn_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
             rBut_type_int.setBounds(baseX + 360, baseY + 30, 70, 20);
             rBut_type_float.setBounds(baseX + 360, baseY + 60, 70, 20);
+            btn_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
+            btn_ramwrite_data.addActionListener(new btn_ramwrite_data_EventListener());
 
 
             //радиокнопки ввода
@@ -211,64 +210,13 @@ public class EMU extends secondary{
             rBut_type_int.setSelected(true);
 
             //обработчики событий радиокнопок ввода
-            Rbutton_RAN_Cell_cng_clean.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {     
-                    if (e.getStateChange() == 1)
-                    {
-                        textBox_ram_write_clean.setVisible(true);
-                        label_cleanwrite_msg.setVisible(true);
-                        btn_ramwrite_clean.setVisible(true);
-                    }
-                    else
-                    {
-                        textBox_ram_write_clean.setVisible(false);
-                        label_cleanwrite_msg.setVisible(false);
-                        btn_ramwrite_clean.setVisible(false);
-                    }
-                }           
-            });
-            Rbutton_RAN_Cell_cng_comm.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {     
-                    if (e.getStateChange() == 1)
-                    {
-                        textBox_ram_write_comm_c.setVisible(true);
-                        spiner_ram_write_com_addr.setVisible(true);
-                        label_comwrite_msg.setVisible(true);
-                        btn_ramwrite_coms.setVisible(true);
-                    }
-                    else
-                    {
-                        textBox_ram_write_comm_c.setVisible(false);
-                        spiner_ram_write_com_addr.setVisible(false);
-                        label_comwrite_msg.setVisible(false);
-                        btn_ramwrite_coms.setVisible(false);
-                    }
-                }           
-            });
-            Rbutton_RAN_Cell_cng_data.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent e) {     
-                    if (e.getStateChange() == 1)
-                    {
-                        textBox_ram_write_data.setVisible(true);
-                        label_datawrite_msg.setVisible(true);
-                        btn_ramwrite_data.setVisible(true);
-                        rBut_type_int.setVisible(true);
-                        rBut_type_float.setVisible(true);
-                    }
-                    else
-                    {
-                        textBox_ram_write_data.setVisible(false);
-                        label_datawrite_msg.setVisible(false);
-                        btn_ramwrite_data.setVisible(false);
-                        rBut_type_int.setVisible(false);
-                        rBut_type_float.setVisible(false);
-                    }
-                }           
-            });
-
+            Rbutton_RAN_Cell_cng_clean.addItemListener(new rButton_ram_clean_Listener());
+            Rbutton_RAN_Cell_cng_comm.addItemListener(new rButton_ram_com_Listener());
+            Rbutton_RAN_Cell_cng_data.addItemListener(new rButton_ram_data_Listener()); 
 
 
     
+            //Спрятать поля ввода кроме чистого при запуске
             textBox_ram_write_comm_c.setVisible(false);
             spiner_ram_write_com_addr.setVisible(false);
             label_comwrite_msg.setVisible(false);
@@ -377,13 +325,100 @@ public class EMU extends secondary{
             }
         }
 
+        //КНОПКА ЧИСТОГО ВВОДА
+        class btn_ramwrite_clean_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "Чистый ввод", "Конец", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+
+        //КНОПКА ВВОДА КОМАНДЫ
+        class btn_ramwrite_coms_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "Ввод команды", "Конец", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+
+        //КНОПКА ВВОДА ДАННЫХ
+        class btn_ramwrite_data_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(null, "Ввод данных", "Конец", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+
+
         //СОБЫТИЕ ВЫБОРА ЯЧЕЙКИ СПИНЕРОМ (выделеняет ячейку в списке)
         class RAM_chooser_Listener implements ChangeListener {
             public void stateChanged(ChangeEvent evt) {
                list_RAM_tmp.setSelectedIndex((int)RAM_choser.getValue());
                refresh_RAM_out();
             }
-         }
+        }
+
+        //ИЗМЕНЕНИЕ ВЫБРАННОЙ ЯЧЕЙКИ В СПИСКЕ RAM
+        class listRAM_Listener implements ListSelectionListener{ 
+            public void valueChanged(ListSelectionEvent e){
+                RAM_choser.setValue(list_RAM_tmp.getSelectedIndex());
+            }
+        }
+
+        //ОБРАБОТЧИКИ РАДИОКНОПОК СКРЫТИЯ ПОЛЕЙ ВВОДА 
+        class rButton_ram_clean_Listener implements ItemListener{
+            public void itemStateChanged(ItemEvent e) {     
+                if (e.getStateChange() == 1)
+                {
+                    textBox_ram_write_clean.setVisible(true);
+                    label_cleanwrite_msg.setVisible(true);
+                    btn_ramwrite_clean.setVisible(true);
+                }
+                else
+                {
+                    textBox_ram_write_clean.setVisible(false);
+                    label_cleanwrite_msg.setVisible(false);
+                    btn_ramwrite_clean.setVisible(false);
+                }
+            }           
+        }
+        class rButton_ram_com_Listener implements ItemListener{
+            public void itemStateChanged(ItemEvent e) {     
+                if (e.getStateChange() == 1)
+                {
+                    textBox_ram_write_comm_c.setVisible(true);
+                    spiner_ram_write_com_addr.setVisible(true);
+                    label_comwrite_msg.setVisible(true);
+                    btn_ramwrite_coms.setVisible(true);
+                }
+                else
+                {
+                    textBox_ram_write_comm_c.setVisible(false);
+                    spiner_ram_write_com_addr.setVisible(false);
+                    label_comwrite_msg.setVisible(false);
+                    btn_ramwrite_coms.setVisible(false);
+                }
+            }           
+        }
+        class rButton_ram_data_Listener implements ItemListener{
+            public void itemStateChanged(ItemEvent e) {     
+                if (e.getStateChange() == 1)
+                {
+                    textBox_ram_write_data.setVisible(true);
+                    label_datawrite_msg.setVisible(true);
+                    btn_ramwrite_data.setVisible(true);
+                    rBut_type_int.setVisible(true);
+                    rBut_type_float.setVisible(true);
+                }
+                else
+                {
+                    textBox_ram_write_data.setVisible(false);
+                    label_datawrite_msg.setVisible(false);
+                    btn_ramwrite_data.setVisible(false);
+                    rBut_type_int.setVisible(false);
+                    rBut_type_float.setVisible(false);
+                }
+            }            
+        }
+
+
 
         //ПЕРЕЗАГРУЗКА UI
         private void refreshUI(){
@@ -417,6 +452,8 @@ public class EMU extends secondary{
             list_RAM_tmp.setSelectedIndex(UU.CANT);
             RAM_choser.setValue(UU.CANT);
         }
+        
+        //ПЕРЕЗАГРУЗКА ПОЛЕЙ ДИНАМИЧЕСКОГО ВЫВОД ЯЧЕЙКИ
         private void refresh_RAM_out(){
             textBox_RAM_out_int.setText("" + bit_to_int(RAM.get_cell((int)RAM_choser.getValue())));
             textBox_RAM_out_float.setText("" + bit_to_float(RAM.get_cell((int)RAM_choser.getValue())));
