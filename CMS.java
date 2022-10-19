@@ -1,11 +1,5 @@
 public class CMS {
 
-    public static final int CELL = 32; //Размер ячейки в бит
-    public static final int MEM = 256; // Количество ячеек памяти
-    public static final int BMEM = 8; // Количество бит на адрес памяти
-    public static final String VER = "1.8.0 Java upd";
-
-
 	//Справочник команд
 	/*
 	Разрядность памяти 8 бит - 256 ячеек

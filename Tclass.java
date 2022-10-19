@@ -1,5 +1,9 @@
 import java.util.BitSet;
-public class Tclass extends CMS {
+public class Tclass {
+    public static final int CELL = 32; //Размер ячейки в бит
+    public static final int MEM = 256; // Количество ячеек памяти
+    public static final int BMEM = 8; // Количество бит на адрес памяти
+    public static final String VER = "1.8.0 Java upd";
 
     public static String show_bitset(BitSet data)   //функция вывода набора битов в строку
     {

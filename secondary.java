@@ -162,4 +162,122 @@ public class secondary extends Tclass {
         return imp;
     }
 
+
+    protected int compute(){
+        BitSet[] coms = cut_com(UU.RC);  //вызов деления
+        int C = (int)coms[0].toLongArray()[0];
+        int A = (int)coms[1].toLongArray()[0];
+        if (C == CMS.STOP)
+            return 666;
+        int op1, op2, res;
+        float fop1, fop2, fres;
+        switch (C)
+        {
+        case CMS.JUMP:
+            UU.CANT = A;
+            return 101;//Выход из выполнения без дополнительного повышения счётчика команд
+        case CMS.LOAD:
+            ALU.write_RO(RAM.get_cell(A));//запись значения ячейки А в аккумулятор
+            break;
+        case CMS.SAVE:
+            RAM.write_cell(A, ALU.get_RO());//запись значения аккумуляторa в ячейку A
+            break;
+        case CMS.AND:
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            res = (op1 && op2);
+            ALU.write_RO(int_to_bit(res));
+            break;
+        case CMS.OR:
+            op1 = bit_to_int(ALU->get_RO());
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            res = (op1 || op2);
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.NOT:
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            res = (!op2);
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.PLUS:
+            op1 = bit_to_int(ALU->get_RO());
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            res = (op1 + op2);
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.MINUS:
+            op1 = bit_to_int(ALU->get_RO());
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            res = (op1 - op2);
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.MULT:
+            op1 = bit_to_int(ALU->get_RO());
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            res = (op1 * op2);
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.DIVIS:
+            op1 = bit_to_int(ALU->get_RO());
+            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            if (op2 == 0)
+            {
+                res = 0;
+                ALU->write_RO(int_to_bit(res));
+                break;
+            }
+            try
+            {
+                res = (op1 / op2);
+            }
+            catch (...)
+            {
+                res = 0;
+            }
+            ALU->write_RO(int_to_bit(res));
+            break;
+        case CMS.FPLUS:
+            fop1 = bit_to_float(ALU->get_RO());
+            fop2 = bit_to_float(RAM->get_cell(A.to_ulong()));
+            fres = (fop1 + fop2);
+            ALU.write_RO(float_to_bit(fres));
+            break;
+        case CMS.FMINUS:
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            fres = (fop1 - fop2);
+            ALU.write_RO(float_to_bit(fres));
+            break;
+        case CMS.FMULT:
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            fres = (fop1 * fop2);
+            ALU.write_RO(float_to_bit(fres));
+            break;
+        case CMS.FDIVIS:
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            if (fop2 == 0.0)
+            {
+                fres = 0.0;
+                ALU.write_RO(float_to_bit(fres));
+                break;
+            }
+            try
+            {
+                fres = (fop1 / fop2);
+            }
+            catch (IOException e)
+            {
+                fres = 0.0;
+            }
+            ALU.write_RO(float_to_bit(fres));
+            break;
+        
+        }
+
+        UU.CANT++; //повышение счётчика команд после выполнения
+        return 0;
+    }
+
 }
