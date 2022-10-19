@@ -9,10 +9,12 @@ public class secondary extends Tclass {
     public static int bit_to_int(BitSet data) 
     {
         if(data.isEmpty())
-            return 0;
+            return -1;
         if (data.get(CELL - 1))
         {
             data.flip(0, CELL); //получение дополнительного кода
+            if (data.isEmpty())
+                return 0 - 1;
             return -(int)data.toLongArray()[0] - 1;
         }
         else

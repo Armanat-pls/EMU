@@ -364,6 +364,7 @@ public class EMU extends secondary{
                     else
                         RAM.write_cell(ad, WRbit);
                 }
+                refresh_RAM_out();
                 refreshUI();
             }
         }
@@ -393,11 +394,18 @@ public class EMU extends secondary{
                 }
                 if (!fail)
                 {
+                    BitSet data = new BitSet(CELL);
+                    if (tmp < 0)
+                        data = make_one(0, oper);
+                    else 
+                        data = make_one(tmp, oper);
+
                     if (checkBox_writetoALU.isSelected())
-                        ALU.write_RO(make_one(tmp, oper));
+                        ALU.write_RO(data);
                     else
-                        RAM.write_cell(ad, make_one(tmp, oper));
+                        RAM.write_cell(ad, data);
                 }
+                refresh_RAM_out();
                 refreshUI();
             }
         }
@@ -405,7 +413,65 @@ public class EMU extends secondary{
         //КНОПКА ВВОДА ДАННЫХ
         class btn_ramwrite_data_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                MessageBox("Ввод данных");
+                int temp;
+                float ftemp;
+
+                int ad = (int)RAM_choser.getValue();
+                boolean fail = false;
+                if (rBut_type_int.isSelected())
+                {
+                    try
+                    {   //попытка считать число
+                        temp =  Integer.parseInt(textBox_ram_write_data.getText());
+                    }
+                    catch (NumberFormatException nfe)
+                    {
+                        fail = true;
+                        temp = 0;
+                        MessageBox("Неверный ввод или переполнение");
+                    }
+                    if (!fail)
+                    {
+                        BitSet data = new BitSet(CELL);
+                        data = int_to_bit(temp);
+                        if (checkBox_writetoALU.isSelected())
+                            ALU.write_RO(data);
+                        else
+                            RAM.write_cell(ad, data);
+                    }
+                }
+                else if (rBut_type_float.isSelected())
+                {
+                    try
+                    {   //попытка считать число
+                        ftemp =  Float.parseFloat(textBox_ram_write_data.getText());
+                    }
+                    catch (NumberFormatException nfe)
+                    {
+                        String tmpF = textBox_ram_write_data.getText();
+                        try
+                        {
+                            ftemp = Float.parseFloat(tmpF.replace(",", "."));
+                        }
+                        catch (NumberFormatException nfe1)
+                        {
+                            fail = true;
+                            ftemp = (float)0.0;
+                            MessageBox("Неверный ввод или переполнение");
+                        }
+                    }
+                    if (!fail)
+                    {
+                        if (checkBox_writetoALU.isSelected())
+                            ALU.write_RO(float_to_bit(ftemp));
+                        else
+                            RAM.write_cell(ad, float_to_bit(ftemp));
+                    }
+                }
+                else
+                    MessageBox("Что-то сильно не так...");
+                refresh_RAM_out();
+                refreshUI();
             }
         }
 
