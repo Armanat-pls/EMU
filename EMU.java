@@ -1,6 +1,9 @@
+import java.util.BitSet;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import javafx.scene.layout.Border;
 public class EMU extends secondary{  
@@ -23,14 +26,14 @@ public class EMU extends secondary{
 
         //Список RAM
         private JLabel label_RAM_list = new JLabel("RAM");
-        private DefaultListModel dlm = new DefaultListModel<String>();
-        private JList list_RAM_tmp = new JList<String>(dlm);
-        private JScrollPane listRAM = new JScrollPane(list_RAM_tmp);
+        private DefaultListModel<String> listRAM = new DefaultListModel<String>();
+        private JList<String> list_RAM_tmp = new JList<String>(listRAM);
+        private JScrollPane list_RAM_final = new JScrollPane(list_RAM_tmp);
 
 
         //Выборщик ячейки
         private JLabel label_RAM_chooser = new JLabel("Выбор ячейки");
-        private JSpinner RAM_choser = new JSpinner();
+        private JSpinner RAM_choser = new JSpinner(new SpinnerNumberModel(0, 0, MEM - 1, 1));
 
 
 /* 
@@ -68,37 +71,50 @@ public class EMU extends secondary{
             textBox_CURcell.setEditable(false);
             textBox_RO.setEditable(false);
             textBox_ALU.setEditable(false);
-
             textBox_RO.setText("[RO]");
             
             label_RAM_list.setBounds(10,120, 365, 55);
-            listRAM.setBounds(10,160, 370, 430);
+            list_RAM_tmp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            list_RAM_tmp.addListSelectionListener(new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e){
+                    //Object element = list_RAM_tmp.getSelectedValue();
+                    //label_RAM_list.setText(element.toString());
+                    label_RAM_list.setText("" + list_RAM_tmp.getSelectedIndex());
+                    RAM_choser.setValue(list_RAM_tmp.getSelectedIndex());
+                }
+            });
+            list_RAM_final.setBounds(10,160, 370, 430);
             container.add(label_RAM_list);
-            container.add(listRAM);
-
-
-            //private JList list_RAM = new JList<String>();
+            container.add(list_RAM_final);
 
 
 
 
-                    //поле вывода АЛУ
-            
-            //this.add("label_CANT_OUT", label);
 
+
+            label_RAM_chooser.setBounds(420, 15, 90, 30);
+            RAM_choser.setBounds(420, 40, 75, 30);
+            container.add(label_RAM_chooser);
+            container.add(RAM_choser);
+
+
+
+
+
+
+
+
+            refreshUI();     
 
             /* 
-            Container container = this.getContentPane();
-            container.setLayout(new GridLayout(6,2,2,2));
-            container.add(label);
-            container.add(input);
     
             ButtonGroup group = new ButtonGroup();
             group.add(radio1);
             group.add(radio2);
+
             container.add(radio1);
-    
             radio1.setSelected(true);
+
             container.add(radio2);
             container.add(check);
             button.addActionListener(new ButtonEventListener());
@@ -107,14 +123,29 @@ public class EMU extends secondary{
             
         }
 
-        public void refreshUI(){
+        private void refreshUI(){
             textBox_CANT.setText("[" + UU.CANT + "]");
             textBox_CURcell.setText(RAM.show_cell(UU.CANT));
             textBox_ALU.setText(ALU.showRO());
-            listRAM.removeAll();
-            
-            //for (int i = 0; i < MEM)
+            listRAM.removeAllElements();
+            String S = "";
+            for (int i = 0; i < MEM; i++)
+            {
+                if (i < 10)
+                    S = "[00" + i + "]: ";
+                else if (i < 100)
+                    S = "[0" + i + "]: ";
+                else if (i < 1000)
+                    S = "[" + i + "]: ";
+                S += RAM.show_cell(i);
+                listRAM.addElement(S);
+            }
+        }
 
+        private void refresh_RAM_out(){
+            BitSet[] coms = cut_com(RAM.get_cell(0));  //вызов деления
+            int C = (int)coms[0].toLongArray()[0];
+            int A = (int)coms[1].toLongArray()[0];
         }
 
         /*

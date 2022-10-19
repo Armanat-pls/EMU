@@ -4,7 +4,6 @@ public class secondary extends Tclass {
     public static BRAIN ALU = new BRAIN();
     public static MEMORY RAM = new MEMORY();
     public static CONTROL UU = new CONTROL();
-
  
     // перевод двоичной в десятичную целое
     public static int bit_to_int(BitSet data) 
@@ -185,60 +184,63 @@ public class secondary extends Tclass {
         case CMS.AND:
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
-            res = (op1 && op2);
+            //res = (op1 && op2);
+            res = 0;
             ALU.write_RO(int_to_bit(res));
             break;
         case CMS.OR:
-            op1 = bit_to_int(ALU->get_RO());
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
-            res = (op1 || op2);
-            ALU->write_RO(int_to_bit(res));
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            //res = (op1 || op2);
+            res = 0;
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.NOT:
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
-            res = (!op2);
-            ALU->write_RO(int_to_bit(res));
+            op2 = bit_to_int(RAM.get_cell(A));
+            //res = (!op2);
+            res = 0;
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.PLUS:
-            op1 = bit_to_int(ALU->get_RO());
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 + op2);
-            ALU->write_RO(int_to_bit(res));
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.MINUS:
-            op1 = bit_to_int(ALU->get_RO());
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 - op2);
-            ALU->write_RO(int_to_bit(res));
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.MULT:
-            op1 = bit_to_int(ALU->get_RO());
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 * op2);
-            ALU->write_RO(int_to_bit(res));
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.DIVIS:
-            op1 = bit_to_int(ALU->get_RO());
-            op2 = bit_to_int(RAM->get_cell(A.to_ulong()));
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
             if (op2 == 0)
             {
                 res = 0;
-                ALU->write_RO(int_to_bit(res));
+                ALU.write_RO(int_to_bit(res));
                 break;
             }
             try
             {
                 res = (op1 / op2);
             }
-            catch (...)
+            catch (Throwable t)
             {
                 res = 0;
             }
-            ALU->write_RO(int_to_bit(res));
+            ALU.write_RO(int_to_bit(res));
             break;
         case CMS.FPLUS:
-            fop1 = bit_to_float(ALU->get_RO());
-            fop2 = bit_to_float(RAM->get_cell(A.to_ulong()));
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
             fres = (fop1 + fop2);
             ALU.write_RO(float_to_bit(fres));
             break;
@@ -259,7 +261,7 @@ public class secondary extends Tclass {
             fop2 = bit_to_float(RAM.get_cell(A));
             if (fop2 == 0.0)
             {
-                fres = 0.0;
+                fres = (float)0.0;
                 ALU.write_RO(float_to_bit(fres));
                 break;
             }
@@ -267,9 +269,9 @@ public class secondary extends Tclass {
             {
                 fres = (fop1 / fop2);
             }
-            catch (IOException e)
+            catch (Throwable t)
             {
-                fres = 0.0;
+                fres = (float)0.0;
             }
             ALU.write_RO(float_to_bit(fres));
             break;
