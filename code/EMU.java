@@ -33,6 +33,15 @@ public class EMU extends secondary{
         private JList<String> list_RAM_tmp = new JList<String>(listRAM);
         private JScrollPane list_RAM_final = new JScrollPane(list_RAM_tmp);
 
+        //поля вывода значений ячейки
+        private JLabel label_RAM_out = new JLabel("Содержимое ячейки");
+        private JTextField textBox_RAM_out_com_1 = new JTextField();
+        private JTextField textBox_RAM_out_com_2 = new JTextField();
+        private JTextField textBox_RAM_out_int = new JTextField();
+        private JTextField textBox_RAM_out_float = new JTextField();
+        private JLabel label_RAM_out_com = new JLabel("Команда");
+        private JLabel label_RAM_out_int = new JLabel("Целое");
+        private JLabel label_RAM_out_float = new JLabel("Дробное");
 
         //Выборщик ячейки
         private JLabel label_RAM_chooser = new JLabel("Выбор ячейки");
@@ -57,18 +66,10 @@ public class EMU extends secondary{
             label_CANT_out.setBounds(10,0, 365, 55);
             textBox_CANT.setBounds(10,40, 60, 25);
             textBox_CURcell.setBounds(80,40, 300, 25);
-            
-            container.add(label_CANT_out);
-            container.add(textBox_CANT);
-            container.add(textBox_CURcell);
-            
+        
             label_ALU_out.setBounds(10,60, 365, 55);
             textBox_RO.setBounds(10,100, 60, 25);
             textBox_ALU.setBounds(80,100, 300, 25);
-            
-            container.add(label_ALU_out);
-            container.add(textBox_RO);
-            container.add(textBox_ALU);
             
             textBox_CANT.setEditable(false);
             textBox_CURcell.setEditable(false);
@@ -84,22 +85,57 @@ public class EMU extends secondary{
                 }
             });
             list_RAM_final.setBounds(10,160, 370, 430);
-            container.add(label_RAM_list);
-            container.add(list_RAM_final);
 
+
+            label_RAM_out.setBounds(400,300, 480, 25);
+
+            label_RAM_out_com.setBounds(430,330, 80, 25);
+            textBox_RAM_out_com_1.setBounds(500,330, 200, 25);
+            textBox_RAM_out_com_2.setBounds(710,330, 80, 25);
+
+            label_RAM_out_int.setBounds(430,360, 365, 25);
+            textBox_RAM_out_int.setBounds(500,360, 200, 25);
+
+            label_RAM_out_float.setBounds(430,390, 365, 25);
+            textBox_RAM_out_float.setBounds(500,390, 200, 25);
+            
+            textBox_RAM_out_com_1.setEditable(false);
+            textBox_RAM_out_com_2.setEditable(false);
+            textBox_RAM_out_int.setEditable(false);
+            textBox_RAM_out_float.setEditable(false);
 
             label_RAM_chooser.setBounds(420, 15, 90, 30);
             RAM_choser.setBounds(420, 40, 75, 30);
             RAM_choser.addChangeListener(new RAM_chooser_Listener());
-            container.add(label_RAM_chooser);
-            container.add(RAM_choser);
 
 
             button_set_CANT.setBounds(545, 15, 100, 65);
             button_set_CANT.addActionListener(new Button_SETCANT_EventListener());
+            
+
+
+
+
+
+            container.add(label_ALU_out);
+            container.add(textBox_RO);
+            container.add(textBox_ALU);
+            container.add(label_CANT_out);
+            container.add(textBox_CANT);
+            container.add(textBox_CURcell);
+            container.add(label_RAM_list);
+            container.add(list_RAM_final);
+            container.add(label_RAM_out);
+            container.add(label_RAM_out_com);
+            container.add(label_RAM_out_int); 
+            container.add(label_RAM_out_float);
+            container.add(textBox_RAM_out_com_1);
+            container.add(textBox_RAM_out_com_2);
+            container.add(textBox_RAM_out_int);
+            container.add(textBox_RAM_out_float);
+            container.add(label_RAM_chooser);
+            container.add(RAM_choser);
             container.add(button_set_CANT);
-
-
             refreshUI();     
 
             /* 
@@ -146,7 +182,9 @@ public class EMU extends secondary{
             textBox_CANT.setText("[" + UU.CANT + "]");
             textBox_CURcell.setText(RAM.show_cell(UU.CANT));
             textBox_ALU.setText(ALU.showRO());
-            listRAM.removeAllElements();
+            boolean first = false;
+            if (listRAM.isEmpty())
+                first = true;
             String S = "";
             for (int i = 0; i < MEM; i++)
             {
@@ -157,15 +195,35 @@ public class EMU extends secondary{
                 else if (i < 1000)
                     S = "[" + i + "]: ";
                 S += RAM.show_cell(i);
-                listRAM.addElement(S);
+                if (first)
+                    listRAM.addElement(S);
+                else
+                    listRAM.set(i,S);
             }
             list_RAM_tmp.setSelectedIndex(UU.CANT);
         }
-        
-        //ПЕРЕЗАГРУЗКА ПОЛЕЙ ВЫВОДА RAM
         private void refresh_RAM_out(){
-        label_RAM_list.setText("" + list_RAM_tmp.getSelectedIndex());
+            textBox_RAM_out_int.setText("" + bit_to_int(RAM.get_cell((int)RAM_choser.getValue())));
+            textBox_RAM_out_float.setText("" + bit_to_float(RAM.get_cell((int)RAM_choser.getValue())));
+
+            BitSet[] coms = new BitSet[2];
+            int C;
+            int A;
+            coms = cut_com(RAM.get_cell((int)RAM_choser.getValue()));  //вызов деления
+            if (coms[0].isEmpty())
+                C = 0;
+            else
+                C = (int)coms[0].toLongArray()[0];
+            if (coms[1].isEmpty())
+                A = 0;
+            else
+                A = (int)coms[1].toLongArray()[0];
+
+            textBox_RAM_out_com_1.setText("" + C);
+            textBox_RAM_out_com_2.setText("" + A);
         }
+        
+
     }
     public static void main(String[] args) {
 		UI app = new UI();

@@ -8,6 +8,8 @@ public class secondary extends Tclass {
     // перевод двоичной в десятичную целое
     public static int bit_to_int(BitSet data) 
     {
+        if(data.isEmpty())
+            return 0;
         if (data.get(CELL - 1))
         {
             data.flip(0, CELL); //получение дополнительного кода
@@ -96,6 +98,8 @@ public class secondary extends Tclass {
     //перевод двоичного вида во float
     public static float bit_to_float(BitSet data)
 	{
+        if (data.isEmpty())
+            return (float)0.0;
 		boolean sign_neagative = (data.get(CELL - 1)); //false - положительное ; true - отрицательное
         BitSet tempEx = new BitSet(CELL);
 		for (int i = 0; i < 8; i++)
@@ -148,6 +152,11 @@ public class secondary extends Tclass {
         imp[0] = new BitSet(CELL);
         imp[1] = new BitSet(CELL);
 
+        if (data.isEmpty())
+        {
+            return imp;
+        }
+
         //0 - BMEM
         for (int i = 0; i < BMEM; i++)
             if (data.get(i))
@@ -162,8 +171,9 @@ public class secondary extends Tclass {
     }
 
 
-    protected int compute(){
-        BitSet[] coms = cut_com(UU.RC);  //вызов деления
+    protected static int compute(){
+        BitSet[] coms = new BitSet[2];
+        coms = cut_com(UU.RC);  //вызов деления
         int C = (int)coms[0].toLongArray()[0];
         int A = (int)coms[1].toLongArray()[0];
         if (C == CMS.STOP)
