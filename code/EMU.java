@@ -280,9 +280,8 @@ public class EMU extends secondary{
                 try{
                     UU.CANT = (int)RAM_choser.getValue();
                 }
-                catch (Throwable t)
-                {
-                    JOptionPane.showMessageDialog(null, "Ошибка ввода счётчика", "Eroor", JOptionPane.PLAIN_MESSAGE);
+                catch (Throwable t){
+                    MessageBox("Ошибка ввода счётчика");
                 }
                 refreshUI();
             }
@@ -291,14 +290,13 @@ public class EMU extends secondary{
         //КНОПКА ВЫПОЛНЕНИЯ ОДНОЙ ЯЧЕЙКИ
         class Button_1cell_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                if(UU.CANT == MEM - 1)
-                {
-                    JOptionPane.showMessageDialog(null, "Достигнута последняя ячейка", "Конец", JOptionPane.PLAIN_MESSAGE);
+                if(UU.CANT == MEM - 1){
+                    MessageBox("Достигнута последняя ячейка");
                     return;
                 }
                 UU.RC = RAM.get_cell(UU.CANT);
                 if (compute() == 666)
-                    JOptionPane.showMessageDialog(null, "Встречена команда завершения", "Конец", JOptionPane.PLAIN_MESSAGE);
+                MessageBox("Встречена команда завершения");
                 refreshUI();
             }
         }
@@ -312,7 +310,7 @@ public class EMU extends secondary{
                     UU.RC = RAM.get_cell(UU.CANT);
                     if (compute() == 666)
                     {
-                        JOptionPane.showMessageDialog(null, "Встречена команда завершения", "Конец", JOptionPane.PLAIN_MESSAGE);
+                        MessageBox("Встречена команда завершения");
                         break;
                     }
                     if (UU.CANT == MEM)
@@ -328,21 +326,86 @@ public class EMU extends secondary{
         //КНОПКА ЧИСТОГО ВВОДА
         class btn_ramwrite_clean_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Чистый ввод", "Конец", JOptionPane.PLAIN_MESSAGE);
+                int ad = (int)RAM_choser.getValue(); //запомнить адрес для записи
+                String bits = textBox_ram_write_clean.getText();
+                int len = bits.length();
+                if (len > CELL)
+                {
+                    MessageBox(len + "bits; Переполнение");
+                    return;
+                }
+                if (len < CELL) // удлинение строки при необходимости
+                {
+                    String temp = "";
+                    for (int i = 0; i < CELL - len;i++)
+                        temp += "0";
+                    bits = temp + bits;
+                }
+                BitSet WRbit = new BitSet(CELL);
+                boolean fail = false;
+                for (int i = 0; i < CELL; i++)
+                {
+                    if (bits.charAt(i) == '1')
+                        WRbit.set(CELL - 1 - i);
+                    else if (bits.charAt(i) == '0')
+                        WRbit.clear(CELL - 1 - i);
+                    else
+                    {
+                        MessageBox("Неверный символ в наборе!");
+                        WRbit.clear();
+                        fail = true;
+                        break;
+                    }
+                }
+                if (!fail)
+                {
+                    if (checkBox_writetoALU.isSelected())
+                        ALU.write_RO(WRbit);
+                    else
+                        RAM.write_cell(ad, WRbit);
+                }
+                refreshUI();
             }
         }
+
 
         //КНОПКА ВВОДА КОМАНДЫ
         class btn_ramwrite_coms_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Ввод команды", "Конец", JOptionPane.PLAIN_MESSAGE);
+                int ad = (int)RAM_choser.getValue(); //запомнить адрес для записи
+                int oper = (int)spiner_ram_write_com_addr.getValue(); //адрес операнда в команде
+                int tmp; //код команды
+                boolean fail = false;
+                try
+                {   //попытка считать число
+                    tmp =  Integer.parseInt(textBox_ram_write_comm_c.getText());
+                }
+                catch (NumberFormatException nfe)
+                {
+                    //попытка расшифровать мнемонику
+                    String Stemp = textBox_ram_write_comm_c.getText();
+                    tmp = CMS.decoder(Stemp);
+                    if (tmp == 0)
+                    {
+                        MessageBox("Команда не распознана");
+                        fail = true;
+                    }
+                }
+                if (!fail)
+                {
+                    if (checkBox_writetoALU.isSelected())
+                        ALU.write_RO(make_one(tmp, oper));
+                    else
+                        RAM.write_cell(ad, make_one(tmp, oper));
+                }
+                refreshUI();
             }
         }
 
         //КНОПКА ВВОДА ДАННЫХ
         class btn_ramwrite_data_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null, "Ввод данных", "Конец", JOptionPane.PLAIN_MESSAGE);
+                MessageBox("Ввод данных");
             }
         }
 
@@ -449,8 +512,6 @@ public class EMU extends secondary{
                 else
                     listRAM.set(i,S);
             }
-            list_RAM_tmp.setSelectedIndex(UU.CANT);
-            RAM_choser.setValue(UU.CANT);
         }
         
         //ПЕРЕЗАГРУЗКА ПОЛЕЙ ДИНАМИЧЕСКОГО ВЫВОД ЯЧЕЙКИ
@@ -473,6 +534,9 @@ public class EMU extends secondary{
 
             textBox_RAM_out_com_1.setText("" + C);
             textBox_RAM_out_com_2.setText("" + A);
+        }
+        private void MessageBox(String data){
+            JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
         }
     }
     public static void main(String[] args) {

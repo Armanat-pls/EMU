@@ -80,35 +80,35 @@ public class CMS {
     
     public static int decoder(String line)
 	{
-		if (line == "PLUS")
+		if (line.equals("PLUS"))
 			return PLUS;
-		if (line == "MINUS")
+		if (line.equals("MINUS"))
 			return MINUS;
-		if (line == "MULT")
+		if (line.equals("MULT"))
 			return MULT;
-		if (line == "DIVIS")
+		if (line.equals("DIVIS"))
 			return DIVIS;
-		if (line == "FPLUS")
+		if (line.equals("FPLUS"))
 			return FPLUS;
-		if (line == "FMINUS")
+		if (line.equals("FMINUS") )
 			return FMINUS;
-		if (line == "FMULT")
+		if (line.equals("FMULT") )
 			return FMULT;
-		if (line == "FDIVIS")
+		if (line.equals("FDIVIS"))
 			return FDIVIS;
-		if (line == "AND")
+		if (line.equals("AND"))
 			return AND;
-		if (line == "OR")
+		if (line.equals("OR"))
 			return OR;
-		if (line == "NOT")
+		if (line.equals("NOT"))
 			return NOT;
-		if (line == "JUMP")
+		if (line.equals("JUMP"))
 			return JUMP;
-		if (line == "LOAD")
+		if (line.equals("LOAD"))
 			return LOAD;
-		if (line == "SAVE")
+		if (line.equals("SAVE"))
 			return SAVE;
-		if (line == "STOP")
+		if (line.equals("STOP"))
 			return STOP;
 		return 0;
 	}
