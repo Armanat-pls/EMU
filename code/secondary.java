@@ -173,9 +173,17 @@ public class secondary extends Tclass {
 
     protected static int compute(){
         BitSet[] coms = new BitSet[2];
+        int C;
+        int A;
         coms = cut_com(UU.RC);  //вызов деления
-        int C = (int)coms[0].toLongArray()[0];
-        int A = (int)coms[1].toLongArray()[0];
+        if (coms[0].isEmpty())
+            C = 0;
+        else
+            C = (int)coms[0].toLongArray()[0];
+        if (coms[1].isEmpty())
+            A = 0;
+        else
+            A = (int)coms[1].toLongArray()[0];
         if (C == CMS.STOP)
             return 666;
         int op1, op2, res;
