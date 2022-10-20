@@ -198,118 +198,109 @@ public class secondary extends Tclass {
             A = 0;
         else
             A = (int)coms[1].toLongArray()[0];
-        if (C == CMS.STOP)
+        if (C == CMSmap.get("STOP"))
             return 666;
         int op1, op2, res;
         float fop1, fop2, fres;
-        switch (C)
+
+        if (C == CMSmap.get("JUMP"))
         {
-        case CMS.JUMP:
             UU.CANT = A;
-            return 101;//Выход из выполнения без дополнительного повышения счётчика команд
-        case CMS.LOAD:
+            return 101;//Выход из выполнения без дополнительного повышения счётчика команд)
+        }
+        else if (C == CMSmap.get("LOAD"))
             ALU.write_RO(RAM.get_cell(A));//запись значения ячейки А в аккумулятор
-            break;
-        case CMS.SAVE:
+        else if (C == CMSmap.get("SAVE"))
             RAM.write_cell(A, ALU.get_RO());//запись значения аккумуляторa в ячейку A
-            break;
-        case CMS.AND:
+        else if (C == CMSmap.get("AND"))
+        {   //логическое И
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             //res = (op1 && op2);
             res = 0;
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.OR:
+        }
+        else if (C == CMSmap.get("OR")) 
+        {   //логическое ИЛИ
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             //res = (op1 || op2);
             res = 0;
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.NOT:
+        }
+        else if (C == CMSmap.get("NOT"))
+        {   //логиеское НЕ
             op2 = bit_to_int(RAM.get_cell(A));
             //res = (!op2);
             res = 0;
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.PLUS:
+        }
+        else if (C == CMSmap.get("PLUS"))
+        {   //сложение целых
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 + op2);
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.MINUS:
+        }
+        else if (C == CMSmap.get("MINUS"))
+        {   //вычитание целых
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 - op2);
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.MULT:
+        }
+        else if (C == CMSmap.get("MULT"))
+        {   //умножение целых
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             res = (op1 * op2);
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.DIVIS:
+        }
+        else if (C == CMSmap.get("DIVIS"))
+        {   //деление целых
             op1 = bit_to_int(ALU.get_RO());
             op2 = bit_to_int(RAM.get_cell(A));
             if (op2 == 0)
-            {
                 res = 0;
-                ALU.write_RO(int_to_bit(res));
-                break;
-            }
-            try
-            {
-                res = (op1 / op2);
-            }
-            catch (Throwable t)
-            {
-                res = 0;
-            }
+            else{
+                try{ res = (op1 / op2); }
+                catch (Throwable t){ res = 0;}
+            }                    
             ALU.write_RO(int_to_bit(res));
-            break;
-        case CMS.FPLUS:
+        }
+        else if (C == CMSmap.get("FPLUS"))
+        {   //сложение float
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
             fres = (fop1 + fop2);
             ALU.write_RO(float_to_bit(fres));
-            break;
-        case CMS.FMINUS:
+        }
+        else if (C == CMSmap.get("FMINUS"))
+        {   //вычитание float
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
             fres = (fop1 - fop2);
             ALU.write_RO(float_to_bit(fres));
-            break;
-        case CMS.FMULT:
+        }
+        else if (C == CMSmap.get("FMULT"))
+        {   //умножение float
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
             fres = (fop1 * fop2);
             ALU.write_RO(float_to_bit(fres));
-            break;
-        case CMS.FDIVIS:
+        }
+        else if (C == CMSmap.get("FMINUS"))
+        {
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
             if (fop2 == 0.0)
-            {
                 fres = (float)0.0;
-                ALU.write_RO(float_to_bit(fres));
-                break;
-            }
-            try
-            {
-                fres = (fop1 / fop2);
-            }
-            catch (Throwable t)
-            {
-                fres = (float)0.0;
+            else{ 
+                try{ fres = (fop1 / fop2);}
+                catch (Throwable t){ fres = (float)0.0;} 
             }
             ALU.write_RO(float_to_bit(fres));
-            break;
-        
         }
-
         UU.CANT++; //повышение счётчика команд после выполнения
         return 0;
     }

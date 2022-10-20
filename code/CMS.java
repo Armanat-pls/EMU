@@ -1,3 +1,6 @@
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 public class CMS {
 
 	//Справочник команд
@@ -10,74 +13,65 @@ public class CMS {
 					0000 0000 0000 0000 0000 0000 0000 0000
 	1 бит флага
 	<0> - 1 = отрицательное число 	CELL-1
-
-
-		У ФОРМЫ ПРОПИСАНО ОГРАНИЧЕНИЕ НА ДЛИННУ КОМАНДЫ 8 СИМВОЛОВ
-		И ДЛЯ КОДА И ДЛЯ МНЕМОНИКИ
 	*/
 
-	// 0000	0000 0000 0000 0000 0001 [0000 0000]  
-	//сложить ячейки RO и оп, сохранить в RO 			|	RO=RO+оп
-	final static int PLUS = 1;
+	//словарь мнемоник и команд
+	public static Map<String, Integer> CMSmap = new HashMap<String, Integer>();
+	public CMS(){
 
-	// 0000	0000 0000 0000 0000 0010 [0000 0000]
-	//вычесть ячейки RO и оп, сохранить в RO 			|	RO=RO-оп
-	final static int MINUS = 2;
+		//сложить ячейки RO и оп, сохранить в RO 
+		CMSmap.put("PLUS", 1);
 
-	// 0000	0000 0000 0000 0000 0011 [0000 0000]
-	//умножить ячейки RO и оп, сохранить в RO   		|	RO=RO*оп
-	final static int MULT = 3;
+		//вычесть ячейки RO и оп, сохранить в RO
+		CMSmap.put("MINUS", 2);
 
-	// 0000 0000 0000 0000 0000 0100 [0000 0000]  
-	// разделить ячейки RO и оп, сохранить в RO  		|	RO=RO/оп1 	
-	final static int DIVIS = 4;
+		//умножить ячейки RO и оп, сохранить в RO 
+		CMSmap.put("MULT", 3);
 
-	// 0000	0000 0000 0000 0000 1111 [0000 0000]  
-	//сложить ячейки RO и оп, сохранить в RO 	FLOAT	|	RO=RO+оп
-	final static int FPLUS = 11;
+		//разделить ячейки RO и оп, сохранить в RO 
+		CMSmap.put("DIVIS", 4);
 
-	// 0000	0000 0000 0000 0000 1100 [0000 0000]
-	//вычесть ячейки RO и оп, сохранить в RO 	FLOAT	|	RO=RO-оп
-	final static int FMINUS = 12;
+		//сложить ячейки RO и оп, сохранить в RO	FLOAT
+		CMSmap.put("FPLUS", 11);
 
-	// 0000	0000 0000 0000 0000 1101 [0000 0000]
-	//умножить ячейки RO и оп, сохранить в RO   FLOAT	|	RO=RO*оп
-	final static int FMULT = 13;
+		//вычесть ячейки RO и оп, сохранить в RO	FLOAT
+		CMSmap.put("FMINUS", 12);
 
-	// 0000 0000 0000 0000 0000 1110 [0000 0000]  
-	// разделить ячейки RO и оп, сохранить в RO  FLOAT	|	RO=RO/оп1 	
-	final static int FDIVIS = 14;
+		//умножить ячейки RO и оп, сохранить в RO	FLOAT
+		CMSmap.put("FMULT", 13);
 
-	// 0000 0000 0000 0000 0001 0101 [0000 0000]  
-	// логическая операция RO И оп, сохранить в RO  	|	RO= RO && оп
-	final static int AND = 21;
+		//разделить ячейки RO и оп, сохранить в RO	FLOAT 
+		CMSmap.put("FDIVIS", 14);
 
-	// 0000 0000 0000 0000 0001 0110 [0000 0000]  
-	// логическая операция RO ИЛИ оп, сохранить в RO  	|	RO= RO || оп
-	final static int OR = 22;
+		//логическая операция RO И оп, сохранить в RO 
+		CMSmap.put("AND", 21);
 
-	// 0000 0000 0000 0000 0001 0111 [0000 0000]  
-	// логическая операция НЕ оп, сохранить в RO  		|	RO= !оп
-	final static int NOT = 23;
+		//логическая операция RO ИЛИ оп, сохранить в RO 
+		CMSmap.put("OR", 22);
 
-	// 0000 0000 0000 1111 1111 1001 [0000 0000]
-	// перевести счётчик команд на ячейку		 		| оп в CANT 
-	final static int JUMP = 4089;
+		//логическая операция НЕ оп, сохранить в RO 
+		CMSmap.put("NOT", 23);
 
-	// 0000	0000 0000 1111 1111 1101 [0000 0000]
-	// записать адрес из оп в регистр операндов 		| оп в RO	
-	final static int LOAD = 4093;
+		//перевести счётчик команд на ячейку
+		CMSmap.put("JUMP", 4089);
+		
+		//записать адрес из оп в регистр операндов 
+		CMSmap.put("LOAD", 4093);
 
-	//0000 0000 0000 1111 1111 1110 [0000 0000]
-	//записать адрес из регистра операндов в оп 		| RO в оп	
-	final static int SAVE = 4094;
+		//записать адрес из регистра операндов в оп 
+		CMSmap.put("SAVE", 4094);
 
-	// 0000 0000 0000 1111 1111 1111 [0000 0000]		| STOP
-	// прекратить выполнение
-	final static int STOP = 4095;
+		//прекратить выполнение
+		CMSmap.put("STOP", 4095);
+
+		//блокировка изменений
+		CMSmap = Collections.unmodifiableMap(CMSmap);
+	}
 
 
-    
+
+
+    /*/
     public static int decoder(String line)
 	{
 		if (line.equals("PLUS"))
@@ -112,4 +106,5 @@ public class CMS {
 			return STOP;
 		return 0;
 	}
+	*/
 }

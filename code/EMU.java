@@ -1,11 +1,14 @@
 import java.util.BitSet;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+
 
 public class EMU extends secondary{  
 
@@ -15,6 +18,10 @@ public class EMU extends secondary{
         private JButton button_1cell = new JButton("<html>Выполнить<p>текущую<p>ячейку</html>"); 
         private JButton button_runALL = new JButton("<html>Выполнить<p>программу</html>");
         private JButton button_clearRAM = new JButton("Очистить память");
+        private JButton button_fillRAM = new JButton("Считать файл памяти");
+
+        //диалог выбора файла
+        private JFileChooser fileopen = new JFileChooser();
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
@@ -114,12 +121,15 @@ public class EMU extends secondary{
 
 
 //======================================================
-//          Кнопка очистки памяти
+//          Кнопки очистки памяти, заполнения из файла
 
             baseX = 10;
             baseY = 600;
-            button_clearRAM.setBounds(baseX, baseY, 150, 30);
+            button_clearRAM.setBounds(baseX, baseY, 140, 30);
             button_clearRAM.addActionListener(new Button_clearRAM_EventListener());
+
+            button_fillRAM.setBounds(baseX + 145, baseY, 160, 30);
+            button_fillRAM.addActionListener(new Button_fillRAM_EventListener());
 
 
 //======================================================
@@ -279,6 +289,7 @@ public class EMU extends secondary{
             container.add(rBut_type_int);
             container.add(rBut_type_float);
             container.add(button_clearRAM);
+            container.add(button_fillRAM);
             
             refreshUI();                 
         }
@@ -290,6 +301,22 @@ public class EMU extends secondary{
                 RAM.zero();
                 refreshUI();
                 refresh_RAM_out();
+            }
+        }
+
+        //КНОПКА ЗАПОЛНЕНИЯ ПАМЯТИ ИЗ ФАЙЛА
+        class Button_fillRAM_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                int ret = fileopen.showDialog(null, "Открыть файл");
+                if (ret == JFileChooser.APPROVE_OPTION){
+                    File file = fileopen.getSelectedFile();
+                    MessageBox(file.getName());
+                    int c;
+                    //file.
+
+                    refreshUI();
+                    refresh_RAM_out();
+                }
             }
         }
 
@@ -404,7 +431,8 @@ public class EMU extends secondary{
                 {
                     //попытка расшифровать мнемонику
                     String Stemp = textBox_ram_write_comm_c.getText();
-                    tmp = CMS.decoder(Stemp);
+                    //tmp = decoder(Stemp);
+                    tmp = 0;
                     if (tmp == 0)
                     {
                         MessageBox("Команда не распознана");
