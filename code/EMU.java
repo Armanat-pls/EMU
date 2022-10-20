@@ -14,6 +14,7 @@ public class EMU extends secondary{
         private JButton button_set_CANT = new JButton("<html>Установить<p>Счётчик</html>"); 
         private JButton button_1cell = new JButton("<html>Выполнить<p>текущую<p>ячейку</html>"); 
         private JButton button_runALL = new JButton("<html>Выполнить<p>программу</html>");
+        private JButton button_clearRAM = new JButton("Очистить память");
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
@@ -112,6 +113,13 @@ public class EMU extends secondary{
             list_RAM_final.setBounds(baseX, baseY + 40 , 370, 430);
 
 
+//======================================================
+//          Кнопка очистки памяти
+
+            baseX = 10;
+            baseY = 600;
+            button_clearRAM.setBounds(baseX, baseY, 150, 30);
+            button_clearRAM.addActionListener(new Button_clearRAM_EventListener());
 
 
 //======================================================
@@ -270,8 +278,19 @@ public class EMU extends secondary{
             container.add(btn_ramwrite_data);
             container.add(rBut_type_int);
             container.add(rBut_type_float);
+            container.add(button_clearRAM);
             
             refreshUI();                 
+        }
+        
+
+        //КНОПКА ОЧИСТКИ ПАМЯТИ
+        class Button_clearRAM_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                RAM.zero();
+                refreshUI();
+                refresh_RAM_out();
+            }
         }
 
         //КНОПКА ВЫСТАВЛЕНИЯ СЧАК
