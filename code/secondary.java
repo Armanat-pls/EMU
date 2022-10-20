@@ -8,17 +8,19 @@ public class secondary extends Tclass {
     // перевод двоичной в десятичную целое
     public static int bit_to_int(BitSet data) 
     {
-        if(data.isEmpty())
-            return -1;
-        if (data.get(CELL - 1))
+        BitSet imp = new BitSet(CELL);
+        imp = (BitSet) data.clone();
+        if (imp.isEmpty())
+            return 0;
+        if (imp.get(CELL - 1))
         {
-            data.flip(0, CELL); //получение дополнительного кода
-            if (data.isEmpty())
-                return 0 - 1;
-            return -(int)data.toLongArray()[0] - 1;
+            imp.flip(0, CELL); //получение дополнительного кода
+            if (imp.isEmpty())
+                return -1;  //все еденицы доп кода это -1
+            return -(int)imp.toLongArray()[0] - 1;
         }
         else
-            return (int)data.toLongArray()[0];   
+            return (int)imp.toLongArray()[0];   
     }
     
     // перевод десятичной в двоичную целое
@@ -100,12 +102,14 @@ public class secondary extends Tclass {
     //перевод двоичного вида во float
     public static float bit_to_float(BitSet data)
 	{
-        if (data.isEmpty())
+        BitSet localData = new BitSet(CELL);
+        localData = (BitSet) data.clone();
+        if (localData.isEmpty())
             return (float)0.0;
-		boolean sign_neagative = (data.get(CELL - 1)); //false - положительное ; true - отрицательное
+		boolean sign_neagative = (localData.get(CELL - 1)); //false - положительное ; true - отрицательное
         BitSet tempEx = new BitSet(CELL);
 		for (int i = 0; i < 8; i++)
-            if (data.get(CELL - 9 + i))
+            if (localData.get(CELL - 9 + i))
 			    tempEx.set(i);
 
 		int ex = bit_to_int(tempEx) - 127; //получение десятичного порядка и смещение
@@ -113,7 +117,7 @@ public class secondary extends Tclass {
         int bool_to_int = 0;
 		for (int i = 0; i < 23; i++)
         {
-            bool_to_int = data.get(CELL - 10 - i) ? 1 : 0;
+            bool_to_int = localData.get(CELL - 10 - i) ? 1 : 0;
             imp += bool_to_int * Math.pow(2, -i - 1);
         }
 		imp = (float)Math.pow(2.0, ex) * imp;
@@ -134,11 +138,9 @@ public class secondary extends Tclass {
         for (int i = 0; i < BMEM;i++) //склейка
             if (B_addr.get(i))
                 imp.set(i);
-            //imp[i] = B_addr[i];
         for (int i = BMEM; i < CELL; i++)
             if (B_com.get(i - BMEM))
                 imp.set(i);
-            //imp[i] = B_com[i-BMEM];
         return imp;
     }
  
@@ -154,19 +156,22 @@ public class secondary extends Tclass {
         imp[0] = new BitSet(CELL);
         imp[1] = new BitSet(CELL);
 
-        if (data.isEmpty())
+        BitSet localData = new BitSet(CELL);
+        localData = (BitSet) data.clone();
+
+        if (localData.isEmpty())
         {
             return imp;
         }
 
         //0 - BMEM
         for (int i = 0; i < BMEM; i++)
-            if (data.get(i))
+            if (localData.get(i))
                 imp[1].set(i);
             //A[i] = data[i];
         //BMEM - CELL 
         for (int i = BMEM; i < CELL; i++)
-            if (data.get(i))
+            if (localData.get(i))
                 imp[0].set(i - BMEM);
             //C[i-BMEM] = data[i];
         return imp;

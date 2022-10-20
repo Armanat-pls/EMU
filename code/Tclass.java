@@ -30,11 +30,11 @@ public class Tclass {
         }
 
         public void write_RO(BitSet data){
-            RO = data;
+            RO = (BitSet)data.clone();
         }
 
         BitSet get_RO(){         //получение регистра
-            return RO;
+            return (BitSet)RO.clone();
         }
 
         String showRO(){		//вывод регистра
@@ -53,10 +53,10 @@ public class Tclass {
         }
 
         public void write_cell(int addr, BitSet data){
-            TABLE[addr] = data;
+            TABLE[addr] = (BitSet)data.clone();
         }
         public BitSet get_cell(int addr){
-            return TABLE[addr];
+            return (BitSet)TABLE[addr].clone();
         }
         public void fill_ALL(){};
         public void dump_all(){};
@@ -66,7 +66,7 @@ public class Tclass {
         }
         public String show_cell(int addr){  
             return show_bitset(TABLE[addr]);
-        };
+        }
     }
 
     static class CONTROL{

@@ -470,8 +470,8 @@ public class EMU extends secondary{
                 }
                 else
                     MessageBox("Что-то сильно не так...");
-                refresh_RAM_out();
                 refreshUI();
+                refresh_RAM_out();
             }
         }
 
@@ -601,9 +601,10 @@ public class EMU extends secondary{
             textBox_RAM_out_com_1.setText("" + C);
             textBox_RAM_out_com_2.setText("" + A);
         }
-        private void MessageBox(String data){
-            JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
-        }
+
+    }
+    public static void MessageBox(String data){
+        JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
     }
     public static void main(String[] args) {
 		UI app = new UI();
