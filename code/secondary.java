@@ -198,7 +198,7 @@ public class secondary extends Tclass {
             A = 0;
         else
             A = (int)coms[1].toLongArray()[0];
-        if (C == CMSmap.get("STOP"))
+        if (C == (int)CMSmap.get("STOP"))
             return 666;
         int op1, op2, res;
         float fop1, fop2, fres;

@@ -4,6 +4,7 @@ public class Tclass extends CMS {
     public static final int MEM = 256; // Количество ячеек памяти
     public static final int BMEM = 8; // Количество бит на адрес памяти
     public static final String VER = "1.8.0 Java upd";
+    public static final boolean comands = initialiseCMS(); // Инициализация словаря команд
 
     public static String show_bitset(BitSet data)   //функция вывода набора битов в строку
     {

@@ -45,6 +45,7 @@ public class EMU extends secondary{
         private JTextField textBox_RAM_out_com_2 = new JTextField();
         private JTextField textBox_RAM_out_int = new JTextField();
         private JTextField textBox_RAM_out_float = new JTextField();
+        private JLabel label_RAM_out_com_MEM = new JLabel();
         private JLabel label_RAM_out_com = new JLabel("Команда");
         private JLabel label_RAM_out_int = new JLabel("Целое");
         private JLabel label_RAM_out_float = new JLabel("Дробное");
@@ -78,9 +79,9 @@ public class EMU extends secondary{
         private JRadioButton rBut_type_int = new JRadioButton("integer");
         private JRadioButton rBut_type_float = new JRadioButton("float");
         
-
         public UI() {
             super("Учебный эмулятор ЭВМ " + VER);
+            this.setIconImage(Toolkit.getDefaultToolkit().getImage("emu.png"));
             this.setBounds(100,100,900,675);
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -165,6 +166,7 @@ public class EMU extends secondary{
             label_RAM_out.setBounds(baseX, baseY, 480, 25);
 
             label_RAM_out_com.setBounds(baseX + 30, baseY + 30, 80, 25);
+            label_RAM_out_com_MEM.setBounds(baseX + 170, baseY + 5, 80, 25);
             textBox_RAM_out_com_1.setBounds(baseX + 100, baseY + 30, 200, 25);
             textBox_RAM_out_com_2.setBounds(baseX + 310, baseY + 30, 80, 25);
 
@@ -260,6 +262,7 @@ public class EMU extends secondary{
             container.add(list_RAM_final);
             container.add(label_RAM_out);
             container.add(label_RAM_out_com);
+            container.add(label_RAM_out_com_MEM);
             container.add(label_RAM_out_int); 
             container.add(label_RAM_out_float);
             container.add(textBox_RAM_out_com_1);
@@ -431,8 +434,7 @@ public class EMU extends secondary{
                 {
                     //попытка расшифровать мнемонику
                     String Stemp = textBox_ram_write_comm_c.getText();
-                    //tmp = decoder(Stemp);
-                    tmp = 0;
+                    tmp = decoder(Stemp);
                     if (tmp == 0)
                     {
                         MessageBox("Команда не распознана");
@@ -654,6 +656,7 @@ public class EMU extends secondary{
 
             textBox_RAM_out_com_1.setText("" + C);
             textBox_RAM_out_com_2.setText("" + A);
+            label_RAM_out_com_MEM.setText(decoder(C));
         }
 
     }

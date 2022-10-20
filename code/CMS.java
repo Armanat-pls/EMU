@@ -1,5 +1,6 @@
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 public class CMS {
 
@@ -15,9 +16,10 @@ public class CMS {
 	<0> - 1 = отрицательное число 	CELL-1
 	*/
 
-	//словарь мнемоник и команд
-	public static Map<String, Integer> CMSmap = new HashMap<String, Integer>();
-	public CMS(){
+	//словарь мнемоник и команд НЕИЗМЕНЯЕМЫЙ ИЗВНЕ
+	public static Map<String, Integer> CMSmap;
+	public static boolean initialiseCMS(){
+		CMSmap = new HashMap<String, Integer>();
 
 		//сложить ячейки RO и оп, сохранить в RO 
 		CMSmap.put("PLUS", 1);
@@ -66,45 +68,27 @@ public class CMS {
 
 		//блокировка изменений
 		CMSmap = Collections.unmodifiableMap(CMSmap);
+		return true;
 	}
 
-
-
-
-    /*/
-    public static int decoder(String line)
+	public static int decoder(String line)
 	{
-		if (line.equals("PLUS"))
-			return PLUS;
-		if (line.equals("MINUS"))
-			return MINUS;
-		if (line.equals("MULT"))
-			return MULT;
-		if (line.equals("DIVIS"))
-			return DIVIS;
-		if (line.equals("FPLUS"))
-			return FPLUS;
-		if (line.equals("FMINUS") )
-			return FMINUS;
-		if (line.equals("FMULT") )
-			return FMULT;
-		if (line.equals("FDIVIS"))
-			return FDIVIS;
-		if (line.equals("AND"))
-			return AND;
-		if (line.equals("OR"))
-			return OR;
-		if (line.equals("NOT"))
-			return NOT;
-		if (line.equals("JUMP"))
-			return JUMP;
-		if (line.equals("LOAD"))
-			return LOAD;
-		if (line.equals("SAVE"))
-			return SAVE;
-		if (line.equals("STOP"))
-			return STOP;
-		return 0;
+		if (CMSmap.get(line) != null)
+			return CMSmap.get(line);
+		else
+			return 0;
 	}
-	*/
+
+	public static String decoder(int com)
+	{	
+		Iterator<Map.Entry<String, Integer>> it = CMSmap.entrySet().iterator();
+		while (it.hasNext()){
+			Map.Entry<String, Integer> pair = it.next();
+			if (pair.getValue() == com)
+				return pair.getKey();
+		}
+		return "";
+	}	
 }
+
+
