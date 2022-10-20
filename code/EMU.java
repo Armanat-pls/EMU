@@ -14,11 +14,11 @@ public class EMU extends secondary{
 
     static class UI extends JFrame {
         //кнопки 
-        private JButton button_set_CANT = new JButton("<html>Установить<p>Счётчик</html>"); 
-        private JButton button_1cell = new JButton("<html>Выполнить<p>текущую<p>ячейку</html>"); 
-        private JButton button_runALL = new JButton("<html>Выполнить<p>программу</html>");
-        private JButton button_clearRAM = new JButton("Очистить память");
-        private JButton button_fillRAM = new JButton("Считать файл памяти");
+        private JButton button_set_CANT = new JButton("<html><div align='center'>Установить cчётчик</div></html>"); 
+        private JButton button_1cell = new JButton("<html><div align='center'>Выполнить текущую ячейку</div></html>"); 
+        private JButton button_runALL = new JButton("<html><div align='center'>Выполнить программу</div></html>");
+        private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
+        private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
 
         //диалог выбора файла
         private JFileChooser fileopen = new JFileChooser();
@@ -118,27 +118,27 @@ public class EMU extends secondary{
             label_RAM_list.setBounds(baseX, baseY, 365, 55);
             list_RAM_tmp.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             list_RAM_tmp.addListSelectionListener(new listRAM_Listener());
-            list_RAM_final.setBounds(baseX, baseY + 40 , 370, 430);
+            list_RAM_final.setBounds(baseX, baseY + 40 , 370, 400);
 
 
 //======================================================
 //          Кнопки очистки памяти, заполнения из файла
 
             baseX = 10;
-            baseY = 600;
-            button_clearRAM.setBounds(baseX, baseY, 140, 30);
+            baseY = 565;
+            button_clearRAM.setBounds(baseX, baseY, 110, 65);
             button_clearRAM.addActionListener(new Button_clearRAM_EventListener());
 
-            button_fillRAM.setBounds(baseX + 145, baseY, 160, 30);
+            button_fillRAM.setBounds(baseX + 120, baseY, 110, 65);
             button_fillRAM.addActionListener(new Button_fillRAM_EventListener());
 
 
 //======================================================
 //          Выборщик ячейки
 
-            baseX = 420;
+            baseX = 400;
             baseY = 15;
-            label_RAM_chooser.setBounds(baseX, baseY, 90, 25);
+            label_RAM_chooser.setBounds(baseX, baseY, 100, 25);
             RAM_choser.setBounds(baseX + 5, baseY + 25, 75, 25);
             RAM_choser.addChangeListener(new RAM_chooser_Listener());
 
@@ -146,15 +146,15 @@ public class EMU extends secondary{
 //======================================================
 //          Кнопки выставления CANT, пошаговой работы, полной работы
 
-            baseX = 545;
+            baseX = 510;
             baseY = 15;
-            button_set_CANT.setBounds(baseX, baseY, 100, 65);
+            button_set_CANT.setBounds(baseX, baseY, 110, 65);
             button_set_CANT.addActionListener(new Button_SETCANT_EventListener());
 
-            button_1cell.setBounds(baseX + 110, baseY, 100, 65);
+            button_1cell.setBounds(baseX + 120, baseY, 110, 65);
             button_1cell.addActionListener(new Button_1cell_EventListener());
 
-            button_runALL.setBounds(baseX + 220, baseY, 100, 65);
+            button_runALL.setBounds(baseX + 240, baseY, 110, 65);
             button_runALL.addActionListener(new Button_runALL_EventListener());
             
 
@@ -211,8 +211,8 @@ public class EMU extends secondary{
             //поля ввода данных
             textBox_ram_write_data.setBounds(baseX + 180, baseY + 30, 170, 25);
             label_datawrite_msg.setBounds(baseX + 220, baseY + 55, 200, 25);
-            rBut_type_int.setBounds(baseX + 360, baseY + 30, 70, 20);
-            rBut_type_float.setBounds(baseX + 360, baseY + 60, 70, 20);
+            rBut_type_int.setBounds(baseX + 360, baseY + 30, 80, 20);
+            rBut_type_float.setBounds(baseX + 360, baseY + 60, 80, 20);
             btn_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
             btn_ramwrite_data.addActionListener(new btn_ramwrite_data_EventListener());
 
@@ -606,9 +606,7 @@ public class EMU extends secondary{
                 }
             }            
         }
-
-
-
+        
         //ПЕРЕЗАГРУЗКА UI
         private void refreshUI(){
             if (UU.CANT < 10)
@@ -667,10 +665,10 @@ public class EMU extends secondary{
     public static void MessageBox(String data){
         JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
     }
+
     public static void main(String[] args) {
 		UI app = new UI();
 		app.setVisible(true);
 	}
-
 }
 
