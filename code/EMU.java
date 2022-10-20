@@ -357,6 +357,10 @@ public class EMU extends secondary{
                 while(true)
                 {
                     UU.RC = RAM.get_cell(UU.CANT);
+                    if(UU.CANT == MEM - 1){
+                        MessageBox("Достигнута последняя ячейка");
+                        break;
+                    }
                     if (compute() == 666)
                     {
                         MessageBox("Встречена команда завершения");
