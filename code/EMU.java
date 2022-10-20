@@ -364,8 +364,8 @@ public class EMU extends secondary{
                     else
                         RAM.write_cell(ad, WRbit);
                 }
-                refresh_RAM_out();
                 refreshUI();
+                refresh_RAM_out();
             }
         }
 
@@ -405,8 +405,8 @@ public class EMU extends secondary{
                     else
                         RAM.write_cell(ad, data);
                 }
-                refresh_RAM_out();
                 refreshUI();
+                refresh_RAM_out();
             }
         }
 
@@ -457,15 +457,22 @@ public class EMU extends secondary{
                         {
                             fail = true;
                             ftemp = (float)0.0;
-                            MessageBox("Неверный ввод или переполнение");
+                            MessageBox("Неверный ввод");
                         }
+                    }
+                    if ((ftemp > 3.40282346639e+38) || (ftemp < -3.40282346639e+38))
+                    {
+                        MessageBox("Переполнение");
+                        fail = true;
                     }
                     if (!fail)
                     {
+                        BitSet data = new BitSet(CELL);
+                        data = float_to_bit(ftemp);
                         if (checkBox_writetoALU.isSelected())
-                            ALU.write_RO(float_to_bit(ftemp));
+                            ALU.write_RO(data);
                         else
-                            RAM.write_cell(ad, float_to_bit(ftemp));
+                            RAM.write_cell(ad, data);
                     }
                 }
                 else

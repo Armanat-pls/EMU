@@ -27,6 +27,9 @@ public class secondary extends Tclass {
     public static BitSet int_to_bit(int data) 
     {
         BitSet imp = new BitSet(CELL);
+        if ((data > 2147483647)||(data < -2147483648))
+            return imp;
+
         if (data < 0) //ситуация отрицательности
             imp.set(CELL - 1);
         for (int i = CELL-2; i>=0; --i)
@@ -44,6 +47,10 @@ public class secondary extends Tclass {
 	{
 		//при попытке перевода чисел без дробной части, кодировка упоротая, но правильная
 		BitSet imp = new BitSet(CELL);
+        if (data == 0)
+            return imp;
+        if ((data > 3.40282346639e+38) || (data < -3.40282346639e+38))
+            return imp;
 
         if (data > 0) //запоминание знака числа + = 0; - = 1
             imp.clear(CELL - 1);
