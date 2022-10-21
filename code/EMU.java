@@ -680,10 +680,15 @@ public class EMU extends secondary{
             if (listRAM.isEmpty())
                 first = true;
             String S = "";
-            int zerosI = 0;
+            int zerosI = 1;
+            int rankCheker = 10;
             for (int i = 0; i < MEM; i++)
             {
-                zerosI = (i == 0) ? 1 : (int)Math.ceil(Math.log10(i + 1));
+                if (i == rankCheker)
+                {
+                    zerosI++;
+                    rankCheker *= 10;
+                }
                 S = makeIndex(i, MEMzeros - zerosI) + ": " + RAM.show_cell(i);
                 if (first)
                     listRAM.addElement(S);
