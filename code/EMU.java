@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
+import java.nio.file.Paths;
+import javax.swing.filechooser.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ChangeEvent;
@@ -20,8 +22,8 @@ public class EMU extends secondary{
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
 
-        //диалог выбора файла
-        private JFileChooser fileopen = new JFileChooser();
+        //диалог выбора файла в папке программы
+        private JFileChooser fill_fileChooser = new JFileChooser();
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
@@ -310,9 +312,12 @@ public class EMU extends secondary{
         //КНОПКА ЗАПОЛНЕНИЯ ПАМЯТИ ИЗ ФАЙЛА
         class Button_fillRAM_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                int ret = fileopen.showDialog(null, "Открыть файл");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
+                fill_fileChooser.setFileFilter(filter);
+                fill_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
+                int ret = fill_fileChooser.showDialog(null, "Открыть файл");
                 if (ret == JFileChooser.APPROVE_OPTION){
-                    File file = fileopen.getSelectedFile();
+                    File file = fill_fileChooser.getSelectedFile();
                     MessageBox(file.getName());
                     int c;
                     //file.
