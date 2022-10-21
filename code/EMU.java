@@ -1,4 +1,5 @@
 import java.util.BitSet;
+import java.util.regex.Pattern;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -327,8 +328,34 @@ public class EMU extends secondary{
                         FileReader reader = new FileReader(fillRAM_file);
                         BufferedReader file_RAMreader = new BufferedReader(reader);
                         String line = file_RAMreader.readLine();
+                        BitSet writeline = new BitSet(CELL);
+                        int cnt = 0;
                         while (line != null){
-                            MessageBox(line);
+                            line = line.replace(" ", "");
+                            if (line.length() < CELL) //удлиннение строки при необходимости
+                            {
+                                String temp = "";
+                                for (int i = 0; i < CELL - line.length(); i++)
+                                    temp += "0";
+                                line = line + temp;
+                            }   
+                            if (Pattern.matches("[0-1]+", line))
+                                for (int i = 0; i < CELL; i++)
+                                {
+                                    if (line.charAt(i) == '0')
+                                        writeline.clear(CELL - 1 - i);
+                                    else if (line.charAt(i) == '1')
+                                        writeline.set(CELL - 1 - i);
+                                    else 
+                                        writeline.clear();
+                                }
+                                if (!writeline.isEmpty())
+                                {
+                                    RAM.write_cell(cnt, writeline);
+                                    cnt++;
+                                }
+                            else
+                                MessageBox("Посторонние символы в файле, неверные записи проигнорированы");
                             line = file_RAMreader.readLine();
                         }
                         file_RAMreader.close();
@@ -412,7 +439,7 @@ public class EMU extends secondary{
                 if (len < CELL) // удлинение строки при необходимости
                 {
                     String temp = "";
-                    for (int i = 0; i < CELL - len;i++)
+                    for (int i = 0; i < CELL - len; i++)
                         temp += "0";
                     bits = temp + bits;
                 }
