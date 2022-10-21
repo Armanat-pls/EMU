@@ -672,28 +672,19 @@ public class EMU extends secondary{
         
         //ПЕРЕЗАГРУЗКА UI
         private void refreshUI(){
-            if (UU.CANT < 10)
-                textBox_CANT.setText("[00" + UU.CANT + "]");
-            else if(UU.CANT < 100)
-                textBox_CANT.setText("[0" + UU.CANT + "]");
-            else
-            textBox_CANT.setText("[" + UU.CANT + "]");
-            
+            int zerosCant = (UU.CANT == 0) ? 1 : (int)Math.ceil(Math.log10(UU.CANT + 1));
+            textBox_CANT.setText(makeIndex(UU.CANT, MEMzeros - zerosCant));
             textBox_CURcell.setText(RAM.show_cell(UU.CANT));
             textBox_ALU.setText(ALU.showRO());
             boolean first = false;
             if (listRAM.isEmpty())
                 first = true;
             String S = "";
+            int zerosI = 0;
             for (int i = 0; i < MEM; i++)
             {
-                if (i < 10)
-                    S = "[00" + i + "]: ";
-                else if (i < 100)
-                    S = "[0" + i + "]: ";
-                else if (i < 1000)
-                    S = "[" + i + "]: ";
-                S += RAM.show_cell(i);
+                zerosI = (i == 0) ? 1 : (int)Math.ceil(Math.log10(i + 1));
+                S = makeIndex(i, MEMzeros - zerosI) + ": " + RAM.show_cell(i);
                 if (first)
                     listRAM.addElement(S);
                 else

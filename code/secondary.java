@@ -133,6 +133,15 @@ public class secondary extends Tclass {
 		return imp;
 	}
 
+    public static String makeIndex(int index, int zerosAmnt)
+    {
+        String zeros = "[";
+        for (int i = 0; i < zerosAmnt; i++)
+            zeros += "0";
+        zeros += index + "]";        
+        return zeros;
+    }
+
 
     // склеивание двух int в двоичный код
     public static BitSet make_one(int com, int addr)
@@ -157,30 +166,22 @@ public class secondary extends Tclass {
         //        coms[0].toLongArray()[0]  //операция
         //        coms[1].toLongArray()[0]  // адрес
         
-        
         BitSet[] imp;   //массив с двумя кусками команд
         imp = new BitSet[2];
         imp[0] = new BitSet(CELL);
         imp[1] = new BitSet(CELL);
-
         BitSet localData = new BitSet(CELL);
         localData = (BitSet) data.clone();
-
         if (localData.isEmpty())
         {
             return imp;
         }
-
-        //0 - BMEM
         for (int i = 0; i < BMEM; i++)
             if (localData.get(i))
                 imp[1].set(i);
-            //A[i] = data[i];
-        //BMEM - CELL 
         for (int i = BMEM; i < CELL; i++)
             if (localData.get(i))
                 imp[0].set(i - BMEM);
-            //C[i-BMEM] = data[i];
         return imp;
     }
 
