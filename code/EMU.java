@@ -2,6 +2,7 @@ import java.util.BitSet;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.awt.*;
@@ -25,10 +26,7 @@ public class EMU extends secondary{
         private JButton button_runALL = new JButton("<html><div align='center'>Выполнить программу</div></html>");
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
-        private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");
-
-        //диалог выбора файла в папке программы
-        private JFileChooser fill_fileChooser = new JFileChooser();
+        private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");       
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
@@ -139,8 +137,8 @@ public class EMU extends secondary{
             button_fillRAM.setBounds(baseX + 120, baseY, 110, 65);
             button_fillRAM.addActionListener(new Button_fillRAM_EventListener());
 
-            //button_dumpRAM.setBounds(baseX + 240, baseY, 110, 65);
-            //button_dumpRAM.addActionListener(new Button_dumpRAM_EventListener());
+            button_dumpRAM.setBounds(baseX + 240, baseY, 110, 65);
+            button_dumpRAM.addActionListener(new Button_dumpRAM_EventListener());
 
 
 //======================================================
@@ -321,6 +319,7 @@ public class EMU extends secondary{
         //КНОПКА ЗАПОЛНЕНИЯ ПАМЯТИ ИЗ ФАЙЛА
         class Button_fillRAM_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
+                JFileChooser fill_fileChooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
                 fill_fileChooser.setFileFilter(filter);
                 fill_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
@@ -359,6 +358,32 @@ public class EMU extends secondary{
             }
         }
 
+        //КНОПКА ДАМПА ПАМЯТИ
+        class Button_dumpRAM_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser dump_fileChooser = new JFileChooser();
+                dump_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
+                dump_fileChooser.setFileFilter(filter);
+                //dump_fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int ret = dump_fileChooser.showDialog(null, "Выбрать папку");
+                if (ret == JFileChooser.APPROVE_OPTION){
+                    try
+                    {
+                        FileWriter writer = new FileWriter(dump_fileChooser.getSelectedFile());
+                        for (int i = 0; i < MEM; i++)
+                            writer.write(RAM.show_cell(i) + "\n");
+                        writer.close();
+                        MessageBox("Дамп сделан в файл '" + dump_fileChooser.getSelectedFile().getName() + "'");
+                    }
+                    catch (IOException t){
+                        MessageBox("Не удалось создать файл");
+                    }
+                }
+            }
+        }
+
+
         //КНОПКА ВЫСТАВЛЕНИЯ СЧАК
         class Button_SETCANT_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
@@ -381,8 +406,9 @@ public class EMU extends secondary{
                 }
                 UU.RC = RAM.get_cell(UU.CANT);
                 if (compute() == 666)
-                MessageBox("Встречена команда завершения");
+                    MessageBox("Встречена команда завершения");
                 refreshUI();
+                list_RAM_tmp.setSelectedIndex(UU.CANT);
             }
         }
 
@@ -407,6 +433,7 @@ public class EMU extends secondary{
                         UU.CANT--;
                         break;
                     }
+                    list_RAM_tmp.setSelectedIndex(UU.CANT);
                 }
                 refreshUI();
             }
