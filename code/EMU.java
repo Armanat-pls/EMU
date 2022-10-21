@@ -1,5 +1,4 @@
 import java.util.BitSet;
-import java.util.regex.Pattern;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -327,9 +326,12 @@ public class EMU extends secondary{
                         File fillRAM_file = fill_fileChooser.getSelectedFile();
                         FileReader reader = new FileReader(fillRAM_file);
                         BufferedReader file_RAMreader = new BufferedReader(reader);
-                        String line = file_RAMreader.readLine();
                         BitSet writeline = new BitSet(CELL);
-                        int cnt = 0;
+                        int cnt_good = 0;
+                        int cnt_all = 0;
+                        boolean failchar = false;
+                        boolean failline = false;
+                        String line = file_RAMreader.readLine();
                         while (line != null){
                             line = line.replace(" ", "");
                             if (line.length() < CELL) //удлиннение строки при необходимости
@@ -337,9 +339,8 @@ public class EMU extends secondary{
                                 String temp = "";
                                 for (int i = 0; i < CELL - line.length(); i++)
                                     temp += "0";
-                                line = line + temp;
+                                line = temp + line;
                             }   
-                            if (Pattern.matches("[0-1]+", line))
                                 for (int i = 0; i < CELL; i++)
                                 {
                                     if (line.charAt(i) == '0')
@@ -347,26 +348,35 @@ public class EMU extends secondary{
                                     else if (line.charAt(i) == '1')
                                         writeline.set(CELL - 1 - i);
                                     else 
+                                    {
                                         writeline.clear();
+                                        failchar = true;
+                                        failline = true;
+                                    }
+                                        
                                 }
-                                if (!writeline.isEmpty())
+                                if (!failline)
                                 {
-                                    RAM.write_cell(cnt, writeline);
-                                    cnt++;
+                                    RAM.write_cell(cnt_good, writeline);
+                                    cnt_good++;
                                 }
-                            else
-                                MessageBox("Посторонние символы в файле, неверные записи проигнорированы");
+                                failline = false;
+                            cnt_all++;
                             line = file_RAMreader.readLine();
                         }
+                        String resultmessage = "Внесено ячеек " + (cnt_good);
+                        if (failchar)
+                            resultmessage += "\nПроигнорированы записи с посторонними символами ("+(cnt_all - cnt_good)+")";
+                        MessageBox(resultmessage);
                         file_RAMreader.close();
                         refreshUI();
                         refresh_RAM_out();
                     }
                     catch (FileNotFoundException t){
-                        t.printStackTrace();
+                        MessageBox("Файл не найден");
                     }
                     catch (IOException t){
-                        t.printStackTrace();
+                        MessageBox("Ошибка взаимодействия");
                     }
                 }
             }
