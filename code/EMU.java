@@ -366,7 +366,7 @@ public class EMU extends secondary{
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
                 dump_fileChooser.setFileFilter(filter);
                 //dump_fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                int ret = dump_fileChooser.showDialog(null, "Выбрать папку");
+                int ret = dump_fileChooser.showDialog(null, "Выбрать файл для дампа");
                 if (ret == JFileChooser.APPROVE_OPTION){
                     try
                     {
