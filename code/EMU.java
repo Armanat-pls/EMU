@@ -71,18 +71,18 @@ public class EMU extends secondary{
         //чистая запись
         private JTextField textBox_ram_write_clean = new JTextField();
         private JLabel label_cleanwrite_msg = new JLabel("Битовый набор без пробелов (32bit)");
-        private JButton btn_ramwrite_clean = new JButton("Ввод"); 
+        private JButton button_ramwrite_clean = new JButton("Ввод"); 
 
         //запись команды
         private JTextField textBox_ram_write_comm_c = new JTextField();
         private JSpinner spiner_ram_write_com_addr = new JSpinner(new SpinnerNumberModel(0, 0, MEM - 1, 1));
         private JLabel label_comwrite_msg = new JLabel("Команда; адрес операнда");
-        private JButton btn_ramwrite_coms = new JButton("Ввод"); 
+        private JButton button_ramwrite_coms = new JButton("Ввод"); 
 
         //запись данных
         private JTextField textBox_ram_write_data = new JTextField();
         private JLabel label_datawrite_msg = new JLabel("Десятичное число");
-        private JButton btn_ramwrite_data = new JButton("Ввод"); 
+        private JButton button_ramwrite_data = new JButton("Ввод"); 
         private JRadioButton rBut_type_int = new JRadioButton("integer");
         private JRadioButton rBut_type_float = new JRadioButton("float");
         
@@ -207,24 +207,24 @@ public class EMU extends secondary{
             //поля чистого ввода
             textBox_ram_write_clean.setBounds(baseX + 140, baseY + 30, 300, 25);
             label_cleanwrite_msg.setBounds(baseX + 180, baseY + 55, 260, 25);
-            btn_ramwrite_clean.setBounds(baseX + 240, baseY + 80, 80, 25);
-            btn_ramwrite_clean.addActionListener(new btn_ramwrite_clean_EventListener());
+            button_ramwrite_clean.setBounds(baseX + 240, baseY + 80, 80, 25);
+            button_ramwrite_clean.addActionListener(new button_ramwrite_clean_EventListener());
 
 
             //поля ввода команды
             textBox_ram_write_comm_c.setBounds(baseX + 180, baseY + 30, 150, 25);
             spiner_ram_write_com_addr.setBounds(baseX + 340, baseY + 30, 60, 25);
             label_comwrite_msg.setBounds(baseX + 220, baseY + 55, 260, 25);
-            btn_ramwrite_coms.setBounds(baseX + 240, baseY + 80, 80, 25);
-            btn_ramwrite_coms.addActionListener(new btn_ramwrite_coms_EventListener());
+            button_ramwrite_coms.setBounds(baseX + 240, baseY + 80, 80, 25);
+            button_ramwrite_coms.addActionListener(new button_ramwrite_coms_EventListener());
 
             //поля ввода данных
             textBox_ram_write_data.setBounds(baseX + 180, baseY + 30, 170, 25);
             label_datawrite_msg.setBounds(baseX + 220, baseY + 55, 200, 25);
             rBut_type_int.setBounds(baseX + 360, baseY + 30, 80, 20);
             rBut_type_float.setBounds(baseX + 360, baseY + 60, 80, 20);
-            btn_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
-            btn_ramwrite_data.addActionListener(new btn_ramwrite_data_EventListener());
+            button_ramwrite_data.setBounds(baseX + 240, baseY + 80, 80, 25);
+            button_ramwrite_data.addActionListener(new button_ramwrite_data_EventListener());
 
 
             //радиокнопки ввода
@@ -250,11 +250,11 @@ public class EMU extends secondary{
             textBox_ram_write_comm_c.setVisible(false);
             spiner_ram_write_com_addr.setVisible(false);
             label_comwrite_msg.setVisible(false);
-            btn_ramwrite_coms.setVisible(false);
+            button_ramwrite_coms.setVisible(false);
 
             textBox_ram_write_data.setVisible(false);
             label_datawrite_msg.setVisible(false);
-            btn_ramwrite_data.setVisible(false);
+            button_ramwrite_data.setVisible(false);
             rBut_type_int.setVisible(false);
             rBut_type_float.setVisible(false);
 
@@ -291,18 +291,19 @@ public class EMU extends secondary{
             container.add(label_RAM_in);
             container.add(textBox_ram_write_clean);
             container.add(label_cleanwrite_msg);
-            container.add(btn_ramwrite_clean);
+            container.add(button_ramwrite_clean);
             container.add(textBox_ram_write_comm_c);
             container.add(spiner_ram_write_com_addr);
             container.add(label_comwrite_msg);
-            container.add(btn_ramwrite_coms);
+            container.add(button_ramwrite_coms);
             container.add(textBox_ram_write_data);
             container.add(label_datawrite_msg);
-            container.add(btn_ramwrite_data);
+            container.add(button_ramwrite_data);
             container.add(rBut_type_int);
             container.add(rBut_type_float);
             container.add(button_clearRAM);
             container.add(button_fillRAM);
+            container.add(button_dumpRAM);
             
             refreshUI();                 
         }
@@ -412,7 +413,7 @@ public class EMU extends secondary{
         }
 
         //КНОПКА ЧИСТОГО ВВОДА
-        class btn_ramwrite_clean_EventListener implements ActionListener {
+        class button_ramwrite_clean_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 int ad = (int)RAM_choser.getValue(); //запомнить адрес для записи
                 String bits = textBox_ram_write_clean.getText();
@@ -459,7 +460,7 @@ public class EMU extends secondary{
 
 
         //КНОПКА ВВОДА КОМАНДЫ
-        class btn_ramwrite_coms_EventListener implements ActionListener {
+        class button_ramwrite_coms_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 int ad = (int)RAM_choser.getValue(); //запомнить адрес для записи
                 int oper = (int)spiner_ram_write_com_addr.getValue(); //адрес операнда в команде
@@ -499,7 +500,7 @@ public class EMU extends secondary{
         }
 
         //КНОПКА ВВОДА ДАННЫХ
-        class btn_ramwrite_data_EventListener implements ActionListener {
+        class button_ramwrite_data_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 int temp;
                 float ftemp;
@@ -593,13 +594,13 @@ public class EMU extends secondary{
                 {
                     textBox_ram_write_clean.setVisible(true);
                     label_cleanwrite_msg.setVisible(true);
-                    btn_ramwrite_clean.setVisible(true);
+                    button_ramwrite_clean.setVisible(true);
                 }
                 else
                 {
                     textBox_ram_write_clean.setVisible(false);
                     label_cleanwrite_msg.setVisible(false);
-                    btn_ramwrite_clean.setVisible(false);
+                    button_ramwrite_clean.setVisible(false);
                 }
             }           
         }
@@ -610,14 +611,14 @@ public class EMU extends secondary{
                     textBox_ram_write_comm_c.setVisible(true);
                     spiner_ram_write_com_addr.setVisible(true);
                     label_comwrite_msg.setVisible(true);
-                    btn_ramwrite_coms.setVisible(true);
+                    button_ramwrite_coms.setVisible(true);
                 }
                 else
                 {
                     textBox_ram_write_comm_c.setVisible(false);
                     spiner_ram_write_com_addr.setVisible(false);
                     label_comwrite_msg.setVisible(false);
-                    btn_ramwrite_coms.setVisible(false);
+                    button_ramwrite_coms.setVisible(false);
                 }
             }           
         }
@@ -627,7 +628,7 @@ public class EMU extends secondary{
                 {
                     textBox_ram_write_data.setVisible(true);
                     label_datawrite_msg.setVisible(true);
-                    btn_ramwrite_data.setVisible(true);
+                    button_ramwrite_data.setVisible(true);
                     rBut_type_int.setVisible(true);
                     rBut_type_float.setVisible(true);
                 }
@@ -635,7 +636,7 @@ public class EMU extends secondary{
                 {
                     textBox_ram_write_data.setVisible(false);
                     label_datawrite_msg.setVisible(false);
-                    btn_ramwrite_data.setVisible(false);
+                    button_ramwrite_data.setVisible(false);
                     rBut_type_int.setVisible(false);
                     rBut_type_float.setVisible(false);
                 }
