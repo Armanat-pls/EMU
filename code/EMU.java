@@ -1,9 +1,13 @@
 import java.util.BitSet;
+import java.io.File;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import javax.swing.*;
 import java.nio.file.Paths;
+import javax.swing.*;
 import javax.swing.filechooser.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -317,13 +321,26 @@ public class EMU extends secondary{
                 fill_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
                 int ret = fill_fileChooser.showDialog(null, "Открыть файл");
                 if (ret == JFileChooser.APPROVE_OPTION){
-                    File file = fill_fileChooser.getSelectedFile();
-                    MessageBox(file.getName());
-                    int c;
-                    //file.
-
-                    refreshUI();
-                    refresh_RAM_out();
+                    try
+                    {
+                        File fillRAM_file = fill_fileChooser.getSelectedFile();
+                        FileReader reader = new FileReader(fillRAM_file);
+                        BufferedReader file_RAMreader = new BufferedReader(reader);
+                        String line = file_RAMreader.readLine();
+                        while (line != null){
+                            MessageBox(line);
+                            line = file_RAMreader.readLine();
+                        }
+                        file_RAMreader.close();
+                        refreshUI();
+                        refresh_RAM_out();
+                    }
+                    catch (FileNotFoundException t){
+                        t.printStackTrace();
+                    }
+                    catch (IOException t){
+                        t.printStackTrace();
+                    }
                 }
             }
         }

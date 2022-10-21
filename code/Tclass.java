@@ -59,8 +59,6 @@ public class Tclass extends CMS {
         public BitSet get_cell(int addr){
             return (BitSet)TABLE[addr].clone();
         }
-        public void fill_ALL(){};
-        public void dump_all(){};
         public void zero(){
             for (int i = 0; i < MEM; i++)
                 TABLE[i].clear();
