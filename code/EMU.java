@@ -25,6 +25,7 @@ public class EMU extends secondary{
         private JButton button_runALL = new JButton("<html><div align='center'>Выполнить программу</div></html>");
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
+        private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");
 
         //диалог выбора файла в папке программы
         private JFileChooser fill_fileChooser = new JFileChooser();
@@ -137,6 +138,9 @@ public class EMU extends secondary{
 
             button_fillRAM.setBounds(baseX + 120, baseY, 110, 65);
             button_fillRAM.addActionListener(new Button_fillRAM_EventListener());
+
+            //button_dumpRAM.setBounds(baseX + 240, baseY, 110, 65);
+            //button_dumpRAM.addActionListener(new Button_dumpRAM_EventListener());
 
 
 //======================================================
@@ -326,46 +330,18 @@ public class EMU extends secondary{
                         File fillRAM_file = fill_fileChooser.getSelectedFile();
                         FileReader reader = new FileReader(fillRAM_file);
                         BufferedReader file_RAMreader = new BufferedReader(reader);
-                        BitSet writeline = new BitSet(CELL);
+                        RAM.zero();
                         int cnt_good = 0;
                         int cnt_all = 0;
-                        boolean failchar = false;
-                        boolean failline = false;
                         String line = file_RAMreader.readLine();
                         while (line != null){
-                            line = line.replace(" ", "");
-                            if (line.length() < CELL) //удлиннение строки при необходимости
-                            {
-                                String temp = "";
-                                for (int i = 0; i < CELL - line.length(); i++)
-                                    temp += "0";
-                                line = temp + line;
-                            }   
-                                for (int i = 0; i < CELL; i++)
-                                {
-                                    if (line.charAt(i) == '0')
-                                        writeline.clear(CELL - 1 - i);
-                                    else if (line.charAt(i) == '1')
-                                        writeline.set(CELL - 1 - i);
-                                    else 
-                                    {
-                                        writeline.clear();
-                                        failchar = true;
-                                        failline = true;
-                                    }
-                                        
-                                }
-                                if (!failline)
-                                {
-                                    RAM.write_cell(cnt_good, writeline);
-                                    cnt_good++;
-                                }
-                                failline = false;
+                            if (RAM.file_RAMfill(cnt_all, line))
+                                cnt_good++;
                             cnt_all++;
                             line = file_RAMreader.readLine();
                         }
                         String resultmessage = "Внесено ячеек " + (cnt_good);
-                        if (failchar)
+                        if (cnt_all - cnt_good > 0)
                             resultmessage += "\nПроигнорированы записи с посторонними символами ("+(cnt_all - cnt_good)+")";
                         MessageBox(resultmessage);
                         file_RAMreader.close();

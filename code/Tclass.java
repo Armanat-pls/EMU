@@ -66,6 +66,35 @@ public class Tclass extends CMS {
         public String show_cell(int addr){  
             return show_bitset(TABLE[addr]);
         }
+
+        //обработка строки и ввод в память
+        public boolean file_RAMfill(int addr, String line){
+            BitSet writeline = new BitSet(CELL);
+            boolean success = true;
+            line = line.replace(" ", "");
+            if (line.length() < CELL) //удлиннение строки при необходимости
+            {
+                String temp = "";
+                for (int i = 0; i < CELL - line.length(); i++)
+                    temp += "0";
+                line = temp + line;
+            }   
+            for (int i = 0; i < CELL; i++)
+            {
+                if (line.charAt(i) == '0')
+                    writeline.clear(CELL - 1 - i);
+                else if (line.charAt(i) == '1')
+                    writeline.set(CELL - 1 - i);
+                else 
+                {
+                    writeline.clear();
+                    success = false;
+                }
+            }
+            if (success)
+                write_cell(addr, writeline);
+            return success;
+        }
     }
 
     static class CONTROL{
