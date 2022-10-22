@@ -24,6 +24,8 @@ public class EMU extends secondary{
         private JButton button_set_CANT = new JButton("<html><div align='center'>Установить cчётчик</div></html>"); 
         private JButton button_1cell = new JButton("<html><div align='center'>Выполнить текущую ячейку</div></html>"); 
         private JButton button_runALL = new JButton("<html><div align='center'>Выполнить программу</div></html>");
+        private JCheckBox checkBox_runSlow = new JCheckBox("Медленно", false);
+
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
         private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");       
@@ -164,6 +166,8 @@ public class EMU extends secondary{
 
             button_runALL.setBounds(baseX + 240, baseY, 110, 65);
             button_runALL.addActionListener(new Button_runALL_EventListener());
+
+            checkBox_runSlow.setBounds(baseX + 250, baseY + 65, 100, 25);
             
 
 //======================================================
@@ -282,6 +286,7 @@ public class EMU extends secondary{
             container.add(button_set_CANT);
             container.add(button_1cell);
             container.add(button_runALL);
+            container.add(checkBox_runSlow);
             container.add(checkBox_writetoALU);
             container.add(Rbutton_RAN_Cell_cng_clean);
             container.add(Rbutton_RAN_Cell_cng_comm);
@@ -414,7 +419,9 @@ public class EMU extends secondary{
         //КНОПКА ВЫПОЛНЕНИЯ ВСЕЙ ПРОГРАММЫ
         class Button_runALL_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-
+                button_runALL.setVisible(false);
+                checkBox_runSlow.setEnabled(false);
+                greyButtons(false);
                 while(true)
                 {
                     UU.RC = RAM.get_cell(UU.CANT);
@@ -435,6 +442,10 @@ public class EMU extends secondary{
                     list_RAM_tmp.setSelectedIndex(UU.CANT);
                 }
                 refreshUI();
+                
+                button_runALL.setVisible(true);
+                checkBox_runSlow.setEnabled(true);
+                greyButtons(true);
             }
         }
 
