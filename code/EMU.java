@@ -302,7 +302,6 @@ public class EMU extends secondary{
             container.add(button_clearRAM);
             container.add(button_fillRAM);
             container.add(button_dumpRAM);
-            
             refreshUI();                 
         }
         
@@ -386,7 +385,7 @@ public class EMU extends secondary{
 
         //КНОПКА ВЫСТАВЛЕНИЯ СЧАК
         class Button_SETCANT_EventListener implements ActionListener {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e) {                 
                 try{
                     UU.CANT = (int)RAM_choser.getValue();
                 }
@@ -720,6 +719,19 @@ public class EMU extends secondary{
             label_RAM_out_com_MEM.setText(decoder(C));
         }
 
+        private void greyButtons(boolean state)
+        {
+            button_1cell.setEnabled(state);
+            button_clearRAM.setEnabled(state);
+            button_dumpRAM.setEnabled(state);
+            button_fillRAM.setEnabled(state);
+            button_ramwrite_clean.setEnabled(state);
+            button_ramwrite_coms.setEnabled(state);
+            button_ramwrite_data.setEnabled(state);
+            button_runALL.setEnabled(state);
+            button_set_CANT.setEnabled(state);
+        }
+        
     }
     public static void MessageBox(String data){
         JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
