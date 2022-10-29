@@ -209,6 +209,16 @@ public class secondary extends Tclass {
             UU.CANT = A;
             return 101;//Выход из выполнения без дополнительного повышения счётчика команд)
         }
+        else if (C == CMSmap.get("IFJUMP"))
+        {
+            if (!ALU.get_RO().isEmpty())
+            {
+                UU.CANT = A;
+                return 101;//Выход из выполнения без дополнительного повышения счётчика команд)
+            }
+            //если регистр пуст, повышение CANT на 1
+            //если не пуст, прыжок на указанную
+        }
         else if (C == CMSmap.get("LOAD"))
             ALU.write_RO(RAM.get_cell(A));//запись значения ячейки А в аккумулятор
         else if (C == CMSmap.get("SAVE"))
