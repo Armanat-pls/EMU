@@ -214,26 +214,24 @@ public class secondary extends Tclass {
         else if (C == CMSmap.get("SAVE"))
             RAM.write_cell(A, ALU.get_RO());//запись значения аккумуляторa в ячейку A
         else if (C == CMSmap.get("AND"))
-        {   //логическое И
-            op1 = bit_to_int(ALU.get_RO());
-            op2 = bit_to_int(RAM.get_cell(A));
-            //res = (op1 && op2);
-            res = 0;
+        {   //логическое И (если регистр или операнд 0, то ложь)
+            if (ALU.get_RO().isEmpty() || RAM.get_cell(A).isEmpty())
+                res = 0;
+            else res = 1;
             ALU.write_RO(int_to_bit(res));
         }
         else if (C == CMSmap.get("OR")) 
-        {   //логическое ИЛИ
-            op1 = bit_to_int(ALU.get_RO());
-            op2 = bit_to_int(RAM.get_cell(A));
-            //res = (op1 || op2);
-            res = 0;
+        {   //логическое ИЛИ (если регистр и операнд 0, то ложь)
+            if (ALU.get_RO().isEmpty() && RAM.get_cell(A).isEmpty())
+                res = 0;
+            else res = 1;
             ALU.write_RO(int_to_bit(res));
         }
         else if (C == CMSmap.get("NOT"))
-        {   //логиеское НЕ
-            op2 = bit_to_int(RAM.get_cell(A));
-            //res = (!op2);
-            res = 0;
+        {   //логиеское НЕ (если операнд 0 сделать 1, и наоборот)
+            if (RAM.get_cell(A).isEmpty())
+                res = 1;
+            else res = 0;
             ALU.write_RO(int_to_bit(res));
         }
         else if (C == CMSmap.get("PLUS"))
