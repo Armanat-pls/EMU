@@ -31,7 +31,8 @@ public class EMU extends secondary{
         private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");       
 
         //поле вывода СЧАК
-        private JLabel label_CANT_out = new JLabel("Счётчик команд и активная ячейка");
+        private JLabel label_CANT_out = new JLabel("СЧАК");
+        private JLabel label_CURcell_out = new JLabel("Ячейка на исполнение");
         private JTextField textBox_CANT = new JTextField();
         private JTextField textBox_CURcell = new JTextField();
 
@@ -100,13 +101,14 @@ public class EMU extends secondary{
 
             int baseX = 10;    //базовые координаты блока
             int baseY = 0;
-            label_CANT_out.setBounds(baseX, baseY, 365, 55);
+            label_CANT_out.setBounds(baseX, baseY, 75, 55);
             textBox_CANT.setBounds(baseX,baseY + 40, 60, 25);
+            label_CURcell_out.setBounds(baseX + 75, baseY, 365, 55);
             textBox_CURcell.setBounds(baseX + 70,baseY + 40, 300, 25);
         
             baseX = 10;
             baseY = 60;
-            label_ALU_out.setBounds(baseX, baseY, 365, 55);
+            label_ALU_out.setBounds(baseX + 75, baseY, 165, 55);
             textBox_RO.setBounds(baseX, baseY + 40, 60, 25);
             textBox_ALU.setBounds(baseX + 70, baseY + 40, 300, 25);
             
@@ -268,6 +270,7 @@ public class EMU extends secondary{
             container.add(textBox_RO);
             container.add(textBox_ALU);
             container.add(label_CANT_out);
+            container.add(label_CURcell_out);
             container.add(textBox_CANT);
             container.add(textBox_CURcell);
             container.add(label_RAM_list);
@@ -286,7 +289,7 @@ public class EMU extends secondary{
             container.add(button_set_CANT);
             container.add(button_1cell);
             container.add(button_runALL);
-            container.add(checkBox_runSlow);
+            //container.add(checkBox_runSlow);
             container.add(checkBox_writetoALU);
             container.add(Rbutton_RAN_Cell_cng_clean);
             container.add(Rbutton_RAN_Cell_cng_comm);
