@@ -318,6 +318,7 @@ public class EMU extends secondary{
         class Button_clearRAM_EventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 RAM.zero();
+                ALU.clearRO();
                 refreshUI();
                 refresh_RAM_out();
             }

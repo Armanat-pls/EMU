@@ -66,6 +66,9 @@ public class CMS {
 		//прекратить выполнение
 		CMSmap.put("STOP", 4095);
 
+		//записывается в АЛУ в ошибках
+		CMSmap.put("ERROR", 606060);
+
 		//блокировка изменений
 		CMSmap = Collections.unmodifiableMap(CMSmap);
 		return true;

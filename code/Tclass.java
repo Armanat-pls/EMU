@@ -42,6 +42,10 @@ public class Tclass extends CMS {
         String showRO(){		//вывод регистра
             return show_bitset(RO);
         }
+
+        void clearRO(){
+            RO.clear();
+        }
     }
 
     static class MEMORY{    //память
