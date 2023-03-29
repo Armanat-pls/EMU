@@ -3,7 +3,7 @@ public class Tclass extends CMS {
     public static final int CELL = 32; //Размер ячейки в бит
     public static final int MEM = 256; // Количество ячеек памяти
     public static final int BMEM = 8; // Количество бит на адрес памяти
-    public static final String VER = "1.8.0 Java upd";
+    public static final String VER = "1.9.0 Kompiler+";
     public static final boolean comands = initialiseCMS(); // Инициализация словаря команд
     public static int MEMzeros = (int)Math.ceil(Math.log10(MEM + 1));
 

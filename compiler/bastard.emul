@@ -1,0 +1,31 @@
+int a = 10;
+int b = 5;
+float c = 4.6;
+float d = 2.8;
+
+int apb = a + b;
+int amb = a - b;
+int aMb = a * b;
+int aDb = a / b;
+
+float cpd = c + d;
+float cmd = c - d;
+float cMd = c * d;
+float cDd = c / d;
+
+int z = 0;
+
+if ( a < b)
+{
+    z = 1;
+}
+else
+{
+    z = 2;
+}
+
+int x = 0;
+while ( x <= 10)
+{
+    x = x + 1;
+}
