@@ -14,21 +14,18 @@ public class compiler {
         logic,
         struct,
         varName,
+        EoI,
         error
     }
     public static class TOKEN{
         TokenType token;
         String value;
-        Boolean EOI;
-        public TOKEN(TokenType token, String value, Boolean EOI){
+        public TOKEN(TokenType token, String value){
             this.token = token;
             this.value = value;
-            this.EOI = EOI;
         }
         public String toString(){
-            String last = "";
-            if (EOI) last = "  EoI";
-            return token + " : " + value + last + "\n"; 
+            return token + " : " + value + "\n"; 
         }
     }
     public static class Lexer{
@@ -80,18 +77,18 @@ public class compiler {
             }
             return false;
         }
-        public static String lexerAnalyse(){
+        public static ArrayList<TOKEN> lexerAnalyse(String filename){
             int symbol;
             BufferedReader bufferedReader;
             try{
                 //bufferedReader = new BufferedReader(new FileReader("bastard.emul"));
-                bufferedReader = new BufferedReader(new FileReader("test.txt"));
+                bufferedReader = new BufferedReader(new FileReader(filename));
                 String buffer = "";
                 char c;
                 do{
                     symbol = bufferedReader.read();
                     if (symbol == -1){
-                        if (state != ReadingWhat.nothing) makeToken(buffer, true);
+                        if (state != ReadingWhat.nothing) makeToken(buffer, false);
                         break;
                     };
                     c = (char)symbol;
@@ -166,65 +163,73 @@ public class compiler {
             }
             catch(FileNotFoundException e){
                 System.out.print(e);
-                return e.toString();
             }
             catch(IOException e){
                 System.out.print(e);
-                return e.toString();
             }
-            Parser.fake(TableOfTokens);
-            return "done";
+            return TableOfTokens;
         }
         private static void makeToken(String buffer, boolean isEOI){
             if (state == ReadingWhat.number){
-                TableOfTokens.add(new TOKEN(TokenType.numInt, buffer ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.numInt, buffer));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                 return;
             }else if (state == ReadingWhat.numFloat){
-                TableOfTokens.add(new TOKEN(TokenType.numFloat, buffer ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.numFloat, buffer));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                 return;
             }else if (state == ReadingWhat.word){
                 for (String type : TYPES) {
                     if (buffer.toLowerCase().equals(type)){
-                        TableOfTokens.add(new TOKEN(TokenType.type, buffer ,isEOI));
+                        TableOfTokens.add(new TOKEN(TokenType.type, buffer));
+                        if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                         return;
                     }
                 }
                 for (String word : WORDS) {
                     if (buffer.toLowerCase().equals(word)){
-                        TableOfTokens.add(new TOKEN(TokenType.word, buffer ,isEOI));
+                        TableOfTokens.add(new TOKEN(TokenType.word, buffer));
+                        if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                         return;
                     }
                 }
-                TableOfTokens.add(new TOKEN(TokenType.varName, buffer ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.varName, buffer));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                     return;
 
             }else if (state == ReadingWhat.operand){
                 for (String operator : OPERATORS) {
                     if (buffer.equals(operator)){
-                        TableOfTokens.add(new TOKEN(TokenType.operand, buffer ,isEOI));
+                        TableOfTokens.add(new TOKEN(TokenType.operand, buffer));
+                        if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                         return;
                     }
                 }
                 for (String struct : STRUCTURE) {
                     if (buffer.equals(struct)){
-                        TableOfTokens.add(new TOKEN(TokenType.struct, buffer ,isEOI));
+                        TableOfTokens.add(new TOKEN(TokenType.struct, buffer));
+                        if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                         return;
                     }
                 }
                 for (String logic : LOGIC) {
                     if (buffer.equals(logic)){
-                        TableOfTokens.add(new TOKEN(TokenType.logic, buffer ,isEOI));
+                        TableOfTokens.add(new TOKEN(TokenType.logic, buffer));
+                        if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                         return;
                     }
                 }
-                TableOfTokens.add(new TOKEN(TokenType.error, "unknown operator: " + buffer ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.error, "unknown operator: " + buffer));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                 return;
             }else if (state == ReadingWhat.nothing){
-                TableOfTokens.add(new TOKEN(TokenType.error, "no state" ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.error, "no state"));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                 return;
             }
             if (buffer == "" || buffer == " "){
-                TableOfTokens.add(new TOKEN(TokenType.error, "no buffer" ,isEOI));
+                TableOfTokens.add(new TOKEN(TokenType.error, "no buffer"));
+                if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI"));
                 return;
             }
         }
@@ -237,7 +242,9 @@ public class compiler {
         }
     }
     public static void main(String[] args) {
-        Lexer.lexerAnalyse();
+        ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
+        Parser.fake(TableOfTokens);
+
     }
 }
 
