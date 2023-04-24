@@ -14,7 +14,7 @@ public class compiler {
         numInt,
         numFloat,
         word,
-        operand,
+        operator,
         logic,
         struct,
         varName,
@@ -120,7 +120,7 @@ public class compiler {
             number,
             word,
             numFloat,
-            operand,
+            operator,
             nothing
         }
         static ArrayList<TOKEN> TableOfTokens = new ArrayList<TOKEN>();
@@ -159,7 +159,7 @@ public class compiler {
                             state = ReadingWhat.word;
                             buffer += c;
                         }
-                        else if (state == ReadingWhat.operand){
+                        else if (state == ReadingWhat.operator){
                             makeToken(buffer, false);
                             state = ReadingWhat.word;
                             buffer = "";
@@ -175,7 +175,7 @@ public class compiler {
                             state = ReadingWhat.number;
                             buffer += c;
                         }
-                        else if (state == ReadingWhat.operand){
+                        else if (state == ReadingWhat.operator){
                             makeToken(buffer, false);
                             state = ReadingWhat.number;
                             buffer = "";
@@ -192,13 +192,13 @@ public class compiler {
                         continue;
                     }
                     if (isSpecial(c)){
-                        if (state == ReadingWhat.nothing || state == ReadingWhat.operand){
-                            state = ReadingWhat.operand;
+                        if (state == ReadingWhat.nothing || state == ReadingWhat.operator){
+                            state = ReadingWhat.operator;
                             buffer += c;
                         }
                         else{
                             makeToken(buffer, false);
-                            state = ReadingWhat.operand;
+                            state = ReadingWhat.operator;
                             buffer = "";
                             buffer += c;
                         }
@@ -259,10 +259,10 @@ public class compiler {
                 if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
 
-            }else if (state == ReadingWhat.operand){
+            }else if (state == ReadingWhat.operator){
                 for (String operator : OPERATORS) {
                     if (buffer.equals(operator)){
-                        TableOfTokens.add(new TOKEN(TokenType.operand, buffer, codeLine));
+                        TableOfTokens.add(new TOKEN(TokenType.operator, buffer, codeLine));
                         if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                         return;
                     }
@@ -381,7 +381,7 @@ public class compiler {
                         else{
                             nameBuffer = token.value;
                             if (!getNextToken(TableOfTokens)) break;
-                            if (token.tokenType != TokenType.operand || !token.value.equals("=")){
+                            if (token.tokenType != TokenType.operator || !token.value.equals("=")){
                                 LexicErrors.add(new LexicError(token, "Expected '='"));
                                 continue;
                             }
@@ -444,6 +444,10 @@ public class compiler {
                             varExists = true;
                             break;
                         }
+                    if (!varExists){
+                        LexicErrors.add(new LexicError(token, "variable doesn't exist"));
+                        continue;
+                    }
                 }
 
             }
@@ -458,11 +462,11 @@ public class compiler {
                 System.out.print(error.toString());
             }
         }
-        /* 
+         
         for (VARIABLE var : VariablesList) {
             System.out.print(var.toString());
         }
-        */
+        
     }
 }
 
