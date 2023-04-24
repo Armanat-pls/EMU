@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -7,6 +8,7 @@ import javax.lang.model.type.TypeKind;
 
 import javafx.scene.control.Tab;
 public class compiler {
+    private static int MEM = 256;
     enum TokenType{
         type,
         numInt,
@@ -29,9 +31,61 @@ public class compiler {
             this.codeLine = codeLine;
         }
         public String toString(){
-            return codeLine + "| " + tokenType + " : " + value + "\n"; 
+            String num = "";
+            if (codeLine < 10) num = "00" + codeLine;
+            else if (codeLine < 100) num = "0" + codeLine;
+            else if (codeLine < 1000) num = "" + codeLine;
+            return num + "| " + tokenType + " : " + value + "\n"; 
         }
     }
+
+    enum VarTypes{
+        floatE,
+        intE,
+        NULLE
+    }
+    public static class VARIABLE{
+        public VarTypes type;
+        public String name;
+        public int intVal;
+        public float floatVal;
+        public int address;
+        public boolean isConst;
+
+        public VARIABLE(TokenType type, String name, String Val, boolean isConst){
+            if (type == TokenType.numInt){
+                this.type = VarTypes.intE;
+                this.intVal = Integer.valueOf(Val);
+                this.floatVal = 0.0f;
+            }
+            else if (type == TokenType.numFloat){
+                this.type = VarTypes.floatE;
+                this.floatVal = Float.valueOf(Val);
+                this.intVal = 0;
+            }
+            else{
+                this.type = VarTypes.NULLE;
+                this.intVal = 0;
+                this.floatVal = 0.0f;
+            }
+            this.name = name;
+            this.isConst = isConst;
+            this.address = 0;
+        }
+        public String toString(){
+            String res = "";
+            res += "======== VARIABLE ========\n";
+            res += "type: " + this.type + "\n";
+            res += "name: " + this.name + "\n";
+            res += "intVal: " + this.intVal + "\n";
+            res += "floatVal: " + this.floatVal + "\n";
+            res += "address: " + this.address + "\n";
+            res += "isConst: " + this.isConst + "\n";
+            res += "========\n";
+            return res;
+        }
+    }    
+    //########### ЛЕКСЕР #############################################################################
     public static class Lexer{
         static char specials[] = {'+','-','*','/','=','!','<','>','{','}','(',')',};
         static String WORDS[] = {
@@ -183,7 +237,7 @@ public class compiler {
                 if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                 return;
             }else if (state == ReadingWhat.numFloat){
-                TableOfTokens.add(new TOKEN(TokenType.numFloat, buffer, codeLine));
+                TableOfTokens.add(new TOKEN(TokenType.numFloat, Float.valueOf(buffer).toString(), codeLine));
                 if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                 return;
             }else if (state == ReadingWhat.word){
@@ -260,33 +314,136 @@ public class compiler {
         }
 
     }
-    public static class SemanticAnalyser{
-        enum State{
-            none,
-            start,
-            varInit,
+    public static ArrayList<VARIABLE> VariablesList = new ArrayList<VARIABLE>();
+    public static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
+
+    public static VARIABLE getVarbyName(String name){
+        for (VARIABLE var : VariablesList) {
+            if (var.name.equals(name)) return var;
         }
+        return new VARIABLE(null, "NULL", "NULL", false);
+    }
+
+    //########### АНАЛИЗАТОР #############################################################################
+    public static class SemanticAnalyser{
         private static ArrayList<LexicError> LexicErrors = new ArrayList<LexicError>();
+        private static int deepLevel = 0;
+        private static TokenType lasTokenType = TokenType.EoI;
+        private static TokenType curTokenType = TokenType.EoI;
+
+        private static TokenType typeBuffer;
+        private static String nameBuffer;
+
+        private static boolean varExists = false;
+
+        private static TOKEN token;
+        private static int i = -1;  //старт с -1, из-за повышения в методе
+        private static boolean getNextToken(ArrayList<TOKEN> TableOfTokens){
+            if (i + 1 < TableOfTokens.size()){
+                token = TableOfTokens.get(++i);
+                lasTokenType = curTokenType;
+                curTokenType = token.tokenType;
+                return true;
+            }
+            else return false;
+        }
         public static ArrayList<LexicError> CheckSemantic(ArrayList<TOKEN> TableOfTokens){
-            State whereNow = State.start;
-            TokenType Ctype;
-            String Cvalue;
-            for (TOKEN token : TableOfTokens) {
-                Ctype = token.tokenType;
-                Cvalue = token.value;
+            while (i < TableOfTokens.size()){
+                varExists = false;
+                if (!getNextToken(TableOfTokens)) break;
                 //System.out.print(token.toString());
-                if (Ctype == TokenType.error){
-                    LexicErrors.add(new LexicError(token, token.value));
-                    continue;
+                if (token.tokenType == TokenType.error){
+                    LexicErrors.add(new LexicError(token, "Lexic error"));
+                    break;
                 }
-                if (whereNow == State.start){
-                    whereNow = State.none;
-                    if (Ctype == TokenType.type){
-                        whereNow = State.varInit;
+                else if (token.tokenType == TokenType.type){ //сценарий создания переменной
+                    if (lasTokenType != TokenType.EoI || deepLevel > 0){
+                        LexicErrors.add(new LexicError(token, "Unexpected place for type"));
                         continue;
                     }
-                    if (Ctype == TokenType.word && !Cvalue.equals("else")) continue;
-                    LexicErrors.add(new LexicError(token, "expected type or keyword"));
+                    if (token.value.equals("int")) typeBuffer = TokenType.numInt;
+                    else if (token.value.equals("float")) typeBuffer = TokenType.numFloat;
+                    if (!getNextToken(TableOfTokens)) break;
+                    if (token.tokenType != TokenType.varName){
+                        LexicErrors.add(new LexicError(token, "Expected varName"));
+                        continue;
+                    }
+                    else{
+                        for (VARIABLE var : VariablesList)
+                            if (var.name.equals(token.value)){
+                                varExists = true;
+                                break;
+                            }
+                        if (varExists){
+                            LexicErrors.add(new LexicError(token, "Variable already exists"));
+                            continue;
+                        }
+                        else{
+                            nameBuffer = token.value;
+                            if (!getNextToken(TableOfTokens)) break;
+                            if (token.tokenType != TokenType.operand || !token.value.equals("=")){
+                                LexicErrors.add(new LexicError(token, "Expected '='"));
+                                continue;
+                            }
+                            else{
+                                if (!getNextToken(TableOfTokens)) break;
+                                if (token.tokenType == TokenType.numInt || token.tokenType == TokenType.numFloat){
+                                    if (typeBuffer != token.tokenType){
+                                        LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                        continue;
+                                    }
+                                    else{
+                                        VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, false));
+                                    }
+                                }
+                                else if (token.tokenType == TokenType.varName){
+                                    varExists = false;
+                                    for (VARIABLE var : VariablesList)
+                                        if (var.name.equals(token.value)){
+                                            varExists = true;
+                                            break;
+                                        }
+                                    if (!varExists){
+                                        LexicErrors.add(new LexicError(token, "variable doesn't exist"));
+                                        continue;
+                                    }
+                                    else{
+                                        VarTypes tmp = getVarbyName(token.value).type;
+                                        if(tmp == VarTypes.intE){
+                                            if (typeBuffer != TokenType.numInt){
+                                                LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                                continue;
+                                            }
+                                            VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(token.value).intVal) ,false));
+                                        }
+                                        else if (tmp == VarTypes.floatE){
+                                            if (typeBuffer != TokenType.numFloat){
+                                                LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                                continue;
+                                            }
+                                            VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(token.value).floatVal) ,false));
+                                        }
+                                    }
+                                }
+                                else{
+                                    LexicErrors.add(new LexicError(token, "Expected number or varName"));
+                                    continue;
+                                }
+                                if (!getNextToken(TableOfTokens)) break;
+                                if (token.tokenType != TokenType.EoI){
+                                    LexicErrors.add(new LexicError(token, "Expected ;"));
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (token.tokenType == TokenType.varName){
+                    for (VARIABLE var : VariablesList)
+                        if (var.name.equals(token.value)){
+                            varExists = true;
+                            break;
+                        }
                 }
 
             }
@@ -301,6 +458,11 @@ public class compiler {
                 System.out.print(error.toString());
             }
         }
+        /* 
+        for (VARIABLE var : VariablesList) {
+            System.out.print(var.toString());
+        }
+        */
     }
 }
 
