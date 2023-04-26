@@ -1,14 +1,6 @@
 import java.io.*;
-import java.lang.reflect.Array;
-import java.sql.Struct;
 import java.util.ArrayList;
-import java.util.Locale;
-
-import javax.lang.model.type.TypeKind;
-
-import javafx.scene.control.Tab;
 public class compiler {
-    private static int MEM = 256;
     enum TokenType{
         type,
         numInt,
@@ -84,7 +76,57 @@ public class compiler {
             res += "========\n";
             return res;
         }
-    }    
+    }
+    public static class LexicError{
+        private String error;
+        private TOKEN token;
+
+        public LexicError(TOKEN token, String error){
+            this.token = token;
+            this.error = error;
+        }
+        public String toString(){
+            String log = "";
+            log += "======== ERROR ========\n";
+            log += "On token " + token.toString() + "\n";
+            log += "Error: " + error + "\n";
+            log += "========\n";
+            return log;
+        }
+
+    }
+    enum InstType{
+        aryph,
+        cycle,
+        ifelse
+    }
+
+    public static class INSTRUCTION{
+        InstType type;
+        String operand1;
+        String operand2;
+        String operator;
+        ArrayList<INSTRUCTION> childInstructions;
+
+        public INSTRUCTION(InstType type, String operand1, String operator, String operand2){
+            this.type = type;
+            this.operand1 = operand1;
+            this.operand2 = operand2;
+            this.operator = operator;
+        }
+    }
+
+    public static class Infoblock{
+        ArrayList<VARIABLE> variablesList;
+        ArrayList<LexicError> errorrsList;
+        ArrayList<INSTRUCTION> instructionsList;
+        
+        public Infoblock(){
+            variablesList = new ArrayList<VARIABLE>();
+            errorrsList = new ArrayList<LexicError>();
+            instructionsList = new ArrayList<INSTRUCTION>();
+        }
+    }
     //########### ЛЕКСЕР #############################################################################
     public static class Lexer{
         static char specials[] = {'+','-','*','/','=','!','<','>','{','}','(',')',};
@@ -296,29 +338,10 @@ public class compiler {
             }
         }
     }
-    public static class LexicError{
-        private String error;
-        private TOKEN token;
-
-        public LexicError(TOKEN token, String error){
-            this.token = token;
-            this.error = error;
-        }
-        public String toString(){
-            String log = "";
-            log += "======== ERROR ========\n";
-            log += "On token " + token.toString() + "\n";
-            log += "Error: " + error + "\n";
-            log += "========\n";
-            return log;
-        }
-
-    }
-    public static ArrayList<VARIABLE> VariablesList = new ArrayList<VARIABLE>();
     public static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
 
-    public static VARIABLE getVarbyName(String name){
-        for (VARIABLE var : VariablesList) {
+    public static VARIABLE getVarbyName(Infoblock ib,String name){
+        for (VARIABLE var : ib.variablesList) {
             if (var.name.equals(name)) return var;
         }
         return new VARIABLE(null, "NULL", "NULL", false);
@@ -326,7 +349,8 @@ public class compiler {
 
     //########### АНАЛИЗАТОР #############################################################################
     public static class SemanticAnalyser{
-        private static ArrayList<LexicError> LexicErrors = new ArrayList<LexicError>();
+
+        private static Infoblock ib = new Infoblock();
         private static int deepLevel = 0;
         private static TokenType lasTokenType = TokenType.EoI;
         private static TokenType curTokenType = TokenType.EoI;
@@ -347,125 +371,140 @@ public class compiler {
             }
             else return false;
         }
-        public static ArrayList<LexicError> CheckSemantic(ArrayList<TOKEN> TableOfTokens){
+        public static Infoblock CheckSemantic(ArrayList<TOKEN> TableOfTokens){
             while (i < TableOfTokens.size()){
                 varExists = false;
                 if (!getNextToken(TableOfTokens)) break;
-                //System.out.print(token.toString());
                 if (token.tokenType == TokenType.error){
-                    LexicErrors.add(new LexicError(token, "Lexic error"));
+                    ib.errorrsList.add(new LexicError(token, "Lexic error"));
                     break;
                 }
                 else if (token.tokenType == TokenType.type){ //сценарий создания переменной
-                    if (lasTokenType != TokenType.EoI || deepLevel > 0){
-                        LexicErrors.add(new LexicError(token, "Unexpected place for type"));
+                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct) || deepLevel > 0){
+                        ib.errorrsList.add(new LexicError(token, "Unexpected place for type"));
                         continue;
                     }
                     if (token.value.equals("int")) typeBuffer = TokenType.numInt;
                     else if (token.value.equals("float")) typeBuffer = TokenType.numFloat;
                     if (!getNextToken(TableOfTokens)) break;
                     if (token.tokenType != TokenType.varName){
-                        LexicErrors.add(new LexicError(token, "Expected varName"));
+                        ib.errorrsList.add(new LexicError(token, "Expected varName"));
                         continue;
                     }
                     else{
-                        for (VARIABLE var : VariablesList)
+                        for (VARIABLE var : ib.variablesList)
                             if (var.name.equals(token.value)){
                                 varExists = true;
                                 break;
                             }
                         if (varExists){
-                            LexicErrors.add(new LexicError(token, "Variable already exists"));
+                            ib.errorrsList.add(new LexicError(token, "Variable already exists"));
                             continue;
                         }
                         else{
                             nameBuffer = token.value;
                             if (!getNextToken(TableOfTokens)) break;
                             if (token.tokenType != TokenType.operator || !token.value.equals("=")){
-                                LexicErrors.add(new LexicError(token, "Expected '='"));
+                                ib.errorrsList.add(new LexicError(token, "Expected '='"));
                                 continue;
                             }
                             else{
                                 if (!getNextToken(TableOfTokens)) break;
                                 if (token.tokenType == TokenType.numInt || token.tokenType == TokenType.numFloat){
                                     if (typeBuffer != token.tokenType){
-                                        LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                        ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
                                         continue;
                                     }
                                     else{
-                                        VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, false));
+                                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, false));
                                     }
                                 }
                                 else if (token.tokenType == TokenType.varName){
                                     varExists = false;
-                                    for (VARIABLE var : VariablesList)
+                                    for (VARIABLE var : ib.variablesList)
                                         if (var.name.equals(token.value)){
                                             varExists = true;
                                             break;
                                         }
                                     if (!varExists){
-                                        LexicErrors.add(new LexicError(token, "variable doesn't exist"));
+                                        ib.errorrsList.add(new LexicError(token, "variable doesn't exist"));
                                         continue;
                                     }
                                     else{
-                                        VarTypes tmp = getVarbyName(token.value).type;
+                                        VarTypes tmp = getVarbyName(ib, token.value).type;
                                         if(tmp == VarTypes.intE){
                                             if (typeBuffer != TokenType.numInt){
-                                                LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                                ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
                                                 continue;
                                             }
-                                            VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(token.value).intVal) ,false));
+                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).intVal) ,false));
                                         }
                                         else if (tmp == VarTypes.floatE){
                                             if (typeBuffer != TokenType.numFloat){
-                                                LexicErrors.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
+                                                ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
                                                 continue;
                                             }
-                                            VariablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(token.value).floatVal) ,false));
+                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).floatVal) ,false));
                                         }
                                     }
                                 }
                                 else{
-                                    LexicErrors.add(new LexicError(token, "Expected number or varName"));
+                                    ib.errorrsList.add(new LexicError(token, "Expected number or varName"));
                                     continue;
                                 }
                                 if (!getNextToken(TableOfTokens)) break;
                                 if (token.tokenType != TokenType.EoI){
-                                    LexicErrors.add(new LexicError(token, "Expected ;"));
+                                    ib.errorrsList.add(new LexicError(token, "Expected ;"));
                                     continue;
                                 }
                             }
                         }
                     }
                 }
-                else if (token.tokenType == TokenType.varName){
-                    for (VARIABLE var : VariablesList)
+                else if (token.tokenType == TokenType.varName){ // проверка выражения
+                    for (VARIABLE var : ib.variablesList)
                         if (var.name.equals(token.value)){
                             varExists = true;
                             break;
                         }
                     if (!varExists){
-                        LexicErrors.add(new LexicError(token, "variable doesn't exist"));
+                        ib.errorrsList.add(new LexicError(token, "variable doesn't exist"));
                         continue;
                     }
                 }
+                else if (token.tokenType == TokenType.word){
+                    
+                }
 
             }
-            return LexicErrors;
+            return ib;
         }
     }
-    public static void main(String[] args) {
-        ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
-        ArrayList<LexicError> LexicErrors = SemanticAnalyser.CheckSemantic(TableOfTokens);
+    public static void printTokens(ArrayList<TOKEN> TableOfTokens){
+        for (TOKEN token : TableOfTokens) {
+            System.out.print(token.toString());
+        }
+    }
+    public static void printErrors(ArrayList<LexicError> LexicErrors){
         if (LexicErrors.size() > 0){
             for (LexicError error : LexicErrors) {
                 System.out.print(error.toString());
             }
         }
-         
+    }
+    public static void printVariables(ArrayList<VARIABLE> VariablesList){
         for (VARIABLE var : VariablesList) {
             System.out.print(var.toString());
         }
+    }
+    public static void main(String[] args) {
+        ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
+        Infoblock ib = SemanticAnalyser.CheckSemantic(TableOfTokens); 
+
+        printTokens(TableOfTokens);
+        printErrors(ib.errorrsList);
+        printVariables(ib.variablesList);
+        
         
     }
 }
