@@ -42,9 +42,8 @@ public class compiler {
         public int intVal;
         public float floatVal;
         public int address;
-        public boolean isConst;
 
-        public VARIABLE(TokenType type, String name, String Val, boolean isConst){
+        public VARIABLE(TokenType type, String name, String Val){
             if (type == TokenType.numInt){
                 this.type = VarTypes.intE;
                 this.intVal = Integer.valueOf(Val);
@@ -61,7 +60,6 @@ public class compiler {
                 this.floatVal = 0.0f;
             }
             this.name = name;
-            this.isConst = isConst;
             this.address = 0;
         }
         public String toString(){
@@ -72,7 +70,6 @@ public class compiler {
             res += "intVal: " + this.intVal + "\n";
             res += "floatVal: " + this.floatVal + "\n";
             res += "address: " + this.address + "\n";
-            res += "isConst: " + this.isConst + "\n";
             res += "========\n";
             return res;
         }
@@ -95,20 +92,22 @@ public class compiler {
         }
 
     }
-    enum InstType{
+    enum InstrType{
         aryph,
-        cycle,
-        ifelse
+        asign,
+        whileblock,
+        ifblock,
+        elseblock
     }
 
     public static class INSTRUCTION{
-        InstType type;
+        InstrType type;
         String operand1;
         String operand2;
         String operator;
         ArrayList<INSTRUCTION> childInstructions;
 
-        public INSTRUCTION(InstType type, String operand1, String operator, String operand2){
+        public INSTRUCTION(InstrType type, String operand1, String operator, String operand2){
             this.type = type;
             this.operand1 = operand1;
             this.operand2 = operand2;
@@ -344,7 +343,7 @@ public class compiler {
         for (VARIABLE var : ib.variablesList) {
             if (var.name.equals(name)) return var;
         }
-        return new VARIABLE(null, "NULL", "NULL", false);
+        return new VARIABLE(null, "NULL", "NULL");
     }
 
     //########### АНАЛИЗАТОР #############################################################################
@@ -354,6 +353,7 @@ public class compiler {
         private static int deepLevel = 0;
         private static TokenType lasTokenType = TokenType.EoI;
         private static TokenType curTokenType = TokenType.EoI;
+        private static String lasTokenValue = "";
 
         private static TokenType typeBuffer;
         private static String nameBuffer;
@@ -364,6 +364,7 @@ public class compiler {
         private static int i = -1;  //старт с -1, из-за повышения в методе
         private static boolean getNextToken(ArrayList<TOKEN> TableOfTokens){
             if (i + 1 < TableOfTokens.size()){
+                lasTokenValue = token.value;
                 token = TableOfTokens.get(++i);
                 lasTokenType = curTokenType;
                 curTokenType = token.tokenType;
@@ -372,6 +373,7 @@ public class compiler {
             else return false;
         }
         public static Infoblock CheckSemantic(ArrayList<TOKEN> TableOfTokens){
+            token = new TOKEN(curTokenType, lasTokenValue, 0);
             while (i < TableOfTokens.size()){
                 varExists = false;
                 if (!getNextToken(TableOfTokens)) break;
@@ -384,6 +386,7 @@ public class compiler {
                         ib.errorrsList.add(new LexicError(token, "Unexpected place for type"));
                         continue;
                     }
+                    LinesToIgnore.add(token.codeLine);
                     if (token.value.equals("int")) typeBuffer = TokenType.numInt;
                     else if (token.value.equals("float")) typeBuffer = TokenType.numFloat;
                     if (!getNextToken(TableOfTokens)) break;
@@ -416,7 +419,7 @@ public class compiler {
                                         continue;
                                     }
                                     else{
-                                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, false));
+                                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value));
                                     }
                                 }
                                 else if (token.tokenType == TokenType.varName){
@@ -437,14 +440,14 @@ public class compiler {
                                                 ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
                                                 continue;
                                             }
-                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).intVal) ,false));
+                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).intVal)));
                                         }
                                         else if (tmp == VarTypes.floatE){
                                             if (typeBuffer != TokenType.numFloat){
                                                 ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
                                                 continue;
                                             }
-                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).floatVal) ,false));
+                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).floatVal)));
                                         }
                                     }
                                 }
@@ -461,7 +464,26 @@ public class compiler {
                         }
                     }
                 }
-                else if (token.tokenType == TokenType.varName){ // проверка выражения
+                else if (token.tokenType == TokenType.numInt || token.tokenType == TokenType.numFloat){ //проверка числа,, скорее всего убрать
+                    if (!(lasTokenType == TokenType.logic || lasTokenType == TokenType.operator)){
+                        if (!(lasTokenType == TokenType.struct && lasTokenValue.equals("("))){
+                            ib.errorrsList.add(new LexicError(token, "unexpected place for number"));
+                            continue;
+                        }
+                    }
+                    for (VARIABLE var : ib.variablesList)
+                        if (var.name.equals(token.value)){
+                            varExists = true;
+                            break;
+                        }
+                    if (!varExists)
+                        ib.variablesList.add(new VARIABLE(curTokenType, token.value, token.value));
+                }
+                else if (token.tokenType == TokenType.varName){ // проверка расположения имени переменной
+                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct || lasTokenType == TokenType.logic || lasTokenType == TokenType.operator)){
+                        ib.errorrsList.add(new LexicError(token, "unexpected place for varName"));
+                        continue;
+                    }
                     for (VARIABLE var : ib.variablesList)
                         if (var.name.equals(token.value)){
                             varExists = true;
@@ -472,8 +494,8 @@ public class compiler {
                         continue;
                     }
                 }
-                else if (token.tokenType == TokenType.word){
-                    
+                else if (token.tokenType == TokenType.word){ // сценарий блока
+                    //ОПРЕДЕЛИТЬСЯ ДОПУСТИМЫ ЛИ ВЛОЖЕННЫЕ БЛОКИ
                 }
 
             }
@@ -501,10 +523,9 @@ public class compiler {
         ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
         Infoblock ib = SemanticAnalyser.CheckSemantic(TableOfTokens); 
 
-        printTokens(TableOfTokens);
+        //printTokens(TableOfTokens);
         printErrors(ib.errorrsList);
-        printVariables(ib.variablesList);
-        
+        printVariables(ib.variablesList);     
         
     }
 }
