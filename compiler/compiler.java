@@ -93,7 +93,7 @@ public class compiler {
 
     }
     enum InstrType{
-        aryph,
+        ariph,
         asign,
         whileblock,
         ifblock,
@@ -339,7 +339,7 @@ public class compiler {
     }
     public static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
 
-    public static VARIABLE getVarbyName(Infoblock ib,String name){
+    public static VARIABLE getVarbyName(Infoblock ib, String name){
         for (VARIABLE var : ib.variablesList) {
             if (var.name.equals(name)) return var;
         }
@@ -350,7 +350,6 @@ public class compiler {
     public static class SemanticAnalyser{
 
         private static Infoblock ib = new Infoblock();
-        private static int deepLevel = 0;
         private static TokenType lasTokenType = TokenType.EoI;
         private static TokenType curTokenType = TokenType.EoI;
         private static String lasTokenValue = "";
@@ -360,8 +359,11 @@ public class compiler {
 
         private static boolean varExists = false;
 
+        private static ArrayList<InstrType> blockLayers = new ArrayList<InstrType>();
+        private static boolean expectingElse = false;
         private static TOKEN token;
         private static int i = -1;  //старт с -1, из-за повышения в методе
+        private static String ErrorBuffer = "";
         private static boolean getNextToken(ArrayList<TOKEN> TableOfTokens){
             if (i + 1 < TableOfTokens.size()){
                 lasTokenValue = token.value;
@@ -371,6 +373,50 @@ public class compiler {
                 return true;
             }
             else return false;
+        }
+        private static String CheckOperand(VarTypes targetType){
+            VARIABLE tmpVar;
+            boolean checkType = true;
+            if (targetType == VarTypes.NULLE) checkType = false;
+            if (token.tokenType == TokenType.numInt){
+                if (checkType && targetType != VarTypes.intE) return "Type mismatch, expected: " + targetType;
+                ib.variablesList.add(new VARIABLE(TokenType.numInt, token.value, token.value));
+            }
+            else if (token.tokenType == TokenType.numFloat){
+                if (checkType && targetType != VarTypes.floatE) return "Type mismatch, expected: " + targetType;
+                ib.variablesList.add(new VARIABLE(TokenType.numFloat, token.value, token.value));
+            }
+            else if (token.tokenType == TokenType.varName){
+                tmpVar = getVarbyName(ib, token.value);
+                if (tmpVar.type == VarTypes.NULLE) return "Variable doesn't exist";
+                if (checkType && tmpVar.type != targetType) return "Type mismatch, expected: " + targetType;
+            }
+            else return "Unexpected token";
+            return "";
+        }
+        private static String CheckOperation(ArrayList<TOKEN> TableOfTokens){
+            VarTypes targetType = getVarbyName(ib, token.value).type;
+            if (targetType == VarTypes.NULLE) return "Variable is NULL";
+
+            if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
+            if (token.tokenType != TokenType.operator || !token.value.equals("=")) return "Expected '='";
+
+            if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
+            ErrorBuffer = CheckOperand(targetType);
+            if (!ErrorBuffer.equals("")) return ErrorBuffer;
+
+            if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
+            if (token.tokenType == TokenType.EoI) return "";
+            if (token.tokenType != TokenType.operator) return "Unexpected token";
+            if (token.value.equals("")) return "Expected arithmetic operator";
+
+            if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
+            ErrorBuffer = CheckOperand(targetType);
+            if (!ErrorBuffer.equals("")) return ErrorBuffer;
+
+            if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
+            if (token.tokenType != TokenType.EoI) return "Expected End Of Instruction";
+            return "";
         }
         public static Infoblock CheckSemantic(ArrayList<TOKEN> TableOfTokens){
             token = new TOKEN(curTokenType, lasTokenValue, 0);
@@ -382,7 +428,7 @@ public class compiler {
                     break;
                 }
                 else if (token.tokenType == TokenType.type){ //сценарий создания переменной
-                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct) || deepLevel > 0){
+                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct) || blockLayers.size() > 0){
                         ib.errorrsList.add(new LexicError(token, "Unexpected place for type"));
                         continue;
                     }
@@ -464,23 +510,8 @@ public class compiler {
                         }
                     }
                 }
-                else if (token.tokenType == TokenType.numInt || token.tokenType == TokenType.numFloat){ //проверка числа,, скорее всего убрать
-                    if (!(lasTokenType == TokenType.logic || lasTokenType == TokenType.operator)){
-                        if (!(lasTokenType == TokenType.struct && lasTokenValue.equals("("))){
-                            ib.errorrsList.add(new LexicError(token, "unexpected place for number"));
-                            continue;
-                        }
-                    }
-                    for (VARIABLE var : ib.variablesList)
-                        if (var.name.equals(token.value)){
-                            varExists = true;
-                            break;
-                        }
-                    if (!varExists)
-                        ib.variablesList.add(new VARIABLE(curTokenType, token.value, token.value));
-                }
                 else if (token.tokenType == TokenType.varName){ // проверка расположения имени переменной
-                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct || lasTokenType == TokenType.logic || lasTokenType == TokenType.operator)){
+                    if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct)){
                         ib.errorrsList.add(new LexicError(token, "unexpected place for varName"));
                         continue;
                     }
@@ -493,11 +524,88 @@ public class compiler {
                         ib.errorrsList.add(new LexicError(token, "variable doesn't exist"));
                         continue;
                     }
+                    ErrorBuffer = CheckOperation(TableOfTokens);
+                    if (!ErrorBuffer.equals("")){
+                        ib.errorrsList.add(new LexicError(token, ErrorBuffer));
+                        continue;
+                    }
+                }
+                else if (token.tokenType == TokenType.struct && token.value.equals("}")){
+                    int layer = blockLayers.size();
+                    if (!(layer > 0)){
+                        ib.errorrsList.add(new LexicError(token, "No block to close"));
+                        continue;
+                    }
+                    if (blockLayers.get(layer - 1) == InstrType.ifblock){
+                        if (i + 1 < TableOfTokens.size()){
+                            TOKEN tmpToken = TableOfTokens.get(i + 1);
+                            if (tmpToken.tokenType == TokenType.word && tmpToken.value.equals("else"))
+                                expectingElse = true;
+                        }
+                    }
+                    blockLayers.remove(layer - 1);
                 }
                 else if (token.tokenType == TokenType.word){ // сценарий блока
-                    //ОПРЕДЕЛИТЬСЯ ДОПУСТИМЫ ЛИ ВЛОЖЕННЫЕ БЛОКИ
+                    if (token.value.equals("else")){
+                        if (!expectingElse){
+                            ib.errorrsList.add(new LexicError(token, "Enexpected 'else'"));
+                            continue;
+                        }
+                        expectingElse = false;
+                        if (!getNextToken(TableOfTokens)) break;
+                        if (token.tokenType != TokenType.struct || !token.value.equals("{")){
+                            ib.errorrsList.add(new LexicError(token, "Enexpected block opening"));
+                            continue;
+                        }
+                        blockLayers.add(InstrType.elseblock);
+                    }
+                    else {
+                        InstrType ItypeBuffer;
+                        if (token.value.equals("while")) ItypeBuffer = InstrType.whileblock;
+                        else if (token.value.equals("if")) ItypeBuffer = InstrType.ifblock;
+                        else {
+                            ib.errorrsList.add(new LexicError(token, "Enexpected word"));
+                            continue;
+                        }
+                        if (!getNextToken(TableOfTokens)) break;
+                        if (token.tokenType != TokenType.struct || !token.value.equals("(")){
+                            ib.errorrsList.add(new LexicError(token, "Expected logic block opening"));
+                            continue;
+                        }
+                        if (!getNextToken(TableOfTokens)) break;
+                        ErrorBuffer = CheckOperand(VarTypes.NULLE); // первый запуск без проверки типа
+                        if (!ErrorBuffer.equals("")){
+                            ib.errorrsList.add(new LexicError(token, ErrorBuffer));
+                            continue;
+                        }
+                        VarTypes tmpType = VarTypes.NULLE;
+                        if (token.tokenType == TokenType.numInt) tmpType = VarTypes.intE;
+                        else if (token.tokenType == TokenType.numFloat) tmpType = VarTypes.floatE;
+                        else if (token.tokenType == TokenType.varName) tmpType = getVarbyName(ib, token.value).type;
+                        if (!getNextToken(TableOfTokens)) break;
+                        if (token.tokenType != TokenType.logic){
+                            ib.errorrsList.add(new LexicError(token, "Expected logic operator"));
+                            continue;
+                        }
+                        if (!getNextToken(TableOfTokens)) break;
+                        ErrorBuffer = CheckOperand(tmpType);
+                        if (!ErrorBuffer.equals("")){
+                            ib.errorrsList.add(new LexicError(token, ErrorBuffer));
+                            continue;
+                        }
+                        if (!getNextToken(TableOfTokens)) break;
+                        if (token.tokenType != TokenType.struct || !token.value.equals(")")){
+                            ib.errorrsList.add(new LexicError(token, "Expected logic block closing"));
+                            continue;
+                        }
+                        if (!getNextToken(TableOfTokens)) break;
+                        if (token.tokenType != TokenType.struct || !token.value.equals("{")){
+                            ib.errorrsList.add(new LexicError(token, "Expected block opening"));
+                            continue;
+                        }
+                        blockLayers.add(ItypeBuffer);
+                    }
                 }
-
             }
             return ib;
         }
@@ -524,8 +632,8 @@ public class compiler {
         Infoblock ib = SemanticAnalyser.CheckSemantic(TableOfTokens); 
 
         //printTokens(TableOfTokens);
+        printVariables(ib.variablesList);
         printErrors(ib.errorrsList);
-        printVariables(ib.variablesList);     
         
     }
 }
