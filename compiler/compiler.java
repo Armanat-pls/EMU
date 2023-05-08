@@ -805,15 +805,15 @@ public class compiler {
         private static BitSet[] BitSets = new BitSet[MEM];
         public static ArrayList<String> Compile(Infoblock ib){
             errors = new ArrayList<String>();
-            if (ib.variablesList.size() + ib.instructionsList.size() >= MEM){
+            if (ib.variablesList.size() + ib.instructionsList.size() >= MEM + 1){
                 errors.add("Memory overload. varCount: " + ib.variablesList.size() + ", instrCount: " + ib.instructionsList.size());
                 return errors;
             }
-            else if(ib.instructionsList.size() >= MEM){
+            else if(ib.instructionsList.size() >= MEM + 1){
                 errors.add("Memory overload. instrCount: " + ib.instructionsList.size());
                 return errors;
             }
-            else if(ib.variablesList.size() >= MEM){
+            else if(ib.variablesList.size() >= MEM + 1){
                 errors.add("Memory overload. varCount: " + ib.variablesList.size());
                 return errors;
             }
@@ -829,9 +829,24 @@ public class compiler {
             }
             BitSets[0] = make_one( 4089, ++MEMcount);
 
+            for (INSTRUCTION instr : ib.instructionsList) {
+                if (MEMcount >= MEM){
+                    errors.add("Memory overload");
+                    break;
+                }
+                if (instr.type == InstrType.asign){
+                    
+                }
+                else if (instr.type == InstrType.ariph){
 
+                }
+            }
+
+
+
+
+            //запись файла
             FileWriter writer;
-            
             try{
                 writer = new FileWriter("compiler\\result.txt");
                 for (int i = 0; i < MEM; i++)
@@ -876,7 +891,7 @@ public class compiler {
             Translator.Compile(ib);
             //printTokens(TableOfTokens);
             printVariables(ib.variablesList);
-            //printInstructions(ib.instructionsList);
+            printInstructions(ib.instructionsList);
         }
     }
 }
