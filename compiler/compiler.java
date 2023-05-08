@@ -102,16 +102,39 @@ public class compiler {
 
     public static class INSTRUCTION{
         InstrType type;
+        String writeTo;
         String operand1;
         String operand2;
         String operator;
         ArrayList<INSTRUCTION> childInstructions;
 
-        public INSTRUCTION(InstrType type, String operand1, String operator, String operand2){
+        public INSTRUCTION(InstrType type, String writeTo, String operand1){
             this.type = type;
+            this.writeTo = writeTo;
+            this.operand1 = operand1;
+            childInstructions = new ArrayList<INSTRUCTION>(0);
+        }
+
+        public INSTRUCTION(InstrType type, String writeTo, String operand1, String operator, String operand2){
+            this.type = type;
+            this.writeTo = writeTo;
             this.operand1 = operand1;
             this.operand2 = operand2;
             this.operator = operator;
+            childInstructions = new ArrayList<INSTRUCTION>(0);
+        }
+
+        public String toString(){
+            String log = "";
+            log += "======== INSTRUCTION ========\n";
+            log += "Operation: " + type.toString() + "\n";
+            log += "WriteTo: " + writeTo + "\n";
+            log += "Operand 1: " + operand1 + "\n";
+            log += "Operator: " + operator  + "\n";
+            log += "Operand 2: " + operand2 + "\n";
+            log += "Children: " + childInstructions.size() + "\n";
+            log += "========\n";
+            return log;
         }
     }
 
@@ -337,8 +360,6 @@ public class compiler {
             }
         }
     }
-    public static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
-
     public static VARIABLE getVarbyName(Infoblock ib, String name){
         for (VARIABLE var : ib.variablesList) {
             if (var.name.equals(name)) return var;
@@ -359,6 +380,7 @@ public class compiler {
 
         private static boolean varExists = false;
 
+        private static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
         private static ArrayList<InstrType> blockLayers = new ArrayList<InstrType>();
         private static boolean expectingElse = false;
         private static TOKEN token;
@@ -374,24 +396,26 @@ public class compiler {
             }
             else return false;
         }
-        private static String CheckOperand(VarTypes targetType){
+        private static String CheckOperand(VarTypes targetType, boolean CreateConstant){
             VARIABLE tmpVar;
             boolean checkType = true;
             if (targetType == VarTypes.NULLE) checkType = false;
             if (token.tokenType == TokenType.numInt){
                 if (checkType && targetType != VarTypes.intE) return "Type mismatch, expected: " + targetType;
-                ib.variablesList.add(new VARIABLE(TokenType.numInt, token.value, token.value));
+                if (CreateConstant && getVarbyName(ib, token.value).type == VarTypes.NULLE)
+                    ib.variablesList.add(new VARIABLE(TokenType.numInt, token.value, token.value));
             }
             else if (token.tokenType == TokenType.numFloat){
                 if (checkType && targetType != VarTypes.floatE) return "Type mismatch, expected: " + targetType;
-                ib.variablesList.add(new VARIABLE(TokenType.numFloat, token.value, token.value));
+                if (CreateConstant && getVarbyName(ib, token.value).type == VarTypes.NULLE)
+                    ib.variablesList.add(new VARIABLE(TokenType.numFloat, token.value, token.value));
             }
             else if (token.tokenType == TokenType.varName){
                 tmpVar = getVarbyName(ib, token.value);
                 if (tmpVar.type == VarTypes.NULLE) return "Variable doesn't exist";
                 if (checkType && tmpVar.type != targetType) return "Type mismatch, expected: " + targetType;
             }
-            else return "Unexpected token";
+            else return "Expected number or varName";
             return "";
         }
         private static String CheckOperation(ArrayList<TOKEN> TableOfTokens){
@@ -402,7 +426,7 @@ public class compiler {
             if (token.tokenType != TokenType.operator || !token.value.equals("=")) return "Expected '='";
 
             if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
-            ErrorBuffer = CheckOperand(targetType);
+            ErrorBuffer = CheckOperand(targetType, true);
             if (!ErrorBuffer.equals("")) return ErrorBuffer;
 
             if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
@@ -411,7 +435,7 @@ public class compiler {
             if (token.value.equals("")) return "Expected arithmetic operator";
 
             if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
-            ErrorBuffer = CheckOperand(targetType);
+            ErrorBuffer = CheckOperand(targetType, true);
             if (!ErrorBuffer.equals("")) return ErrorBuffer;
 
             if (!getNextToken(TableOfTokens)) return "Unexpected EOF";
@@ -440,77 +464,45 @@ public class compiler {
                         ib.errorrsList.add(new LexicError(token, "Expected varName"));
                         continue;
                     }
-                    else{
-                        for (VARIABLE var : ib.variablesList)
-                            if (var.name.equals(token.value)){
-                                varExists = true;
-                                break;
-                            }
-                        if (varExists){
-                            ib.errorrsList.add(new LexicError(token, "Variable already exists"));
-                            continue;
+                    for (VARIABLE var : ib.variablesList)
+                        if (var.name.equals(token.value)){
+                            varExists = true;
+                            break;
                         }
-                        else{
-                            nameBuffer = token.value;
-                            if (!getNextToken(TableOfTokens)) break;
-                            if (token.tokenType != TokenType.operator || !token.value.equals("=")){
-                                ib.errorrsList.add(new LexicError(token, "Expected '='"));
-                                continue;
-                            }
-                            else{
-                                if (!getNextToken(TableOfTokens)) break;
-                                if (token.tokenType == TokenType.numInt || token.tokenType == TokenType.numFloat){
-                                    if (typeBuffer != token.tokenType){
-                                        ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
-                                        continue;
-                                    }
-                                    else{
-                                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value));
-                                    }
-                                }
-                                else if (token.tokenType == TokenType.varName){
-                                    varExists = false;
-                                    for (VARIABLE var : ib.variablesList)
-                                        if (var.name.equals(token.value)){
-                                            varExists = true;
-                                            break;
-                                        }
-                                    if (!varExists){
-                                        ib.errorrsList.add(new LexicError(token, "variable doesn't exist"));
-                                        continue;
-                                    }
-                                    else{
-                                        VarTypes tmp = getVarbyName(ib, token.value).type;
-                                        if(tmp == VarTypes.intE){
-                                            if (typeBuffer != TokenType.numInt){
-                                                ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
-                                                continue;
-                                            }
-                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).intVal)));
-                                        }
-                                        else if (tmp == VarTypes.floatE){
-                                            if (typeBuffer != TokenType.numFloat){
-                                                ib.errorrsList.add(new LexicError(token, "type mismatch, expected " + typeBuffer));
-                                                continue;
-                                            }
-                                            ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, String.valueOf(getVarbyName(ib, token.value).floatVal)));
-                                        }
-                                    }
-                                }
-                                else{
-                                    ib.errorrsList.add(new LexicError(token, "Expected number or varName"));
-                                    continue;
-                                }
-                                if (!getNextToken(TableOfTokens)) break;
-                                if (token.tokenType != TokenType.EoI){
-                                    ib.errorrsList.add(new LexicError(token, "Expected ;"));
-                                    continue;
-                                }
-                            }
-                        }
+                    if (varExists){
+                        ib.errorrsList.add(new LexicError(token, "Variable already exists"));
+                        continue;
+                    }
+                    nameBuffer = token.value;
+                    if (!getNextToken(TableOfTokens)) break;
+                    if (token.tokenType != TokenType.operator || !token.value.equals("=")){
+                        ib.errorrsList.add(new LexicError(token, "Expected '='"));
+                        continue;
+                    }
+
+                    if (!getNextToken(TableOfTokens)) break;
+                    VarTypes tmp = VarTypes.NULLE;
+                    if (typeBuffer == TokenType.numInt) tmp = VarTypes.intE;
+                    else if (typeBuffer == TokenType.numFloat) tmp = VarTypes.floatE;
+                    ErrorBuffer = CheckOperand(tmp, false);
+                    if (!ErrorBuffer.equals("")){
+                        ib.errorrsList.add(new LexicError(token, ErrorBuffer));
+                        continue;
+                    }
+                    if (token.tokenType == TokenType.varName){
+                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, "0"));
+                        ib.instructionsList.add(new INSTRUCTION(InstrType.asign, nameBuffer, token.value));
+                    }
+                    else
+                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value));
+                
+                    if (!getNextToken(TableOfTokens)) break;
+                    if (token.tokenType != TokenType.EoI){
+                        ib.errorrsList.add(new LexicError(token, "Expected ;"));
+                        continue;
                     }
                 }
-                else if (token.tokenType == TokenType.varName){ // проверка расположения имени переменной
+                else if (token.tokenType == TokenType.varName){ // сценарий проверки операции
                     if (!(lasTokenType == TokenType.EoI || lasTokenType == TokenType.struct)){
                         ib.errorrsList.add(new LexicError(token, "unexpected place for varName"));
                         continue;
@@ -530,7 +522,7 @@ public class compiler {
                         continue;
                     }
                 }
-                else if (token.tokenType == TokenType.struct && token.value.equals("}")){
+                else if (token.tokenType == TokenType.struct && token.value.equals("}")){ //сценарий закрытия блока
                     int layer = blockLayers.size();
                     if (!(layer > 0)){
                         ib.errorrsList.add(new LexicError(token, "No block to close"));
@@ -573,7 +565,7 @@ public class compiler {
                             continue;
                         }
                         if (!getNextToken(TableOfTokens)) break;
-                        ErrorBuffer = CheckOperand(VarTypes.NULLE); // первый запуск без проверки типа
+                        ErrorBuffer = CheckOperand(VarTypes.NULLE, true); // первый запуск без проверки типа
                         if (!ErrorBuffer.equals("")){
                             ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                             continue;
@@ -588,7 +580,7 @@ public class compiler {
                             continue;
                         }
                         if (!getNextToken(TableOfTokens)) break;
-                        ErrorBuffer = CheckOperand(tmpType);
+                        ErrorBuffer = CheckOperand(tmpType, true);
                         if (!ErrorBuffer.equals("")){
                             ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                             continue;
@@ -627,6 +619,11 @@ public class compiler {
             System.out.print(var.toString());
         }
     }
+    public static void printInstructions(ArrayList<INSTRUCTION> InstructionsList){
+        for (INSTRUCTION instruction : InstructionsList) {
+            System.out.print(instruction.toString());
+        }
+    }
     public static void main(String[] args) {
         ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
         Infoblock ib = SemanticAnalyser.CheckSemantic(TableOfTokens); 
@@ -634,6 +631,7 @@ public class compiler {
         //printTokens(TableOfTokens);
         printVariables(ib.variablesList);
         printErrors(ib.errorrsList);
+        printInstructions(ib.instructionsList);
         
     }
 }
