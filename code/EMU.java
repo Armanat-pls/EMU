@@ -14,7 +14,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
+import java.util.ArrayList;
 
 
 public class EMU extends secondary{  
@@ -753,8 +753,20 @@ public class EMU extends secondary{
     }
 
     public static void main(String[] args) {
-		UI app = new UI();
-		app.setVisible(true);
+		//UI app = new UI();
+		//app.setVisible(true);
+
+
+
+        ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
+        compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
+        //printErrors(ib.errorrsList);
+        if (ib.errorrsList.size() == 0){
+            compiler.Translator.Compile(ib);
+            //compiler.printTokens(TableOfTokens);
+            compiler.printVariables(ib.variablesList);
+            compiler.printInstructions(ib.instructionsList);
+        }
 	}
 }
 

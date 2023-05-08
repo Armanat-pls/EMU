@@ -10,6 +10,7 @@ public class Tclass extends CMS {
     public static String show_bitset(BitSet data)   //функция вывода набора битов в строку
     {
         String S = "";
+        if (data == null) return S;
         for (int i = CELL - 1; i >= 0; i--)
         {
             if (i % 4 == 3)			
