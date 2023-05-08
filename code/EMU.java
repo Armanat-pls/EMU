@@ -505,18 +505,18 @@ public class EMU extends secondary{
             public void actionPerformed(ActionEvent e) {
                 int ad = (int)RAM_choser.getValue(); //запомнить адрес для записи
                 int oper = (int)spiner_ram_write_com_addr.getValue(); //адрес операнда в команде
-                int tmp; //код команды
+                int CommandCode; //код команды
                 boolean fail = false;
                 try
                 {   //попытка считать число
-                    tmp =  Integer.parseInt(textBox_ram_write_comm_c.getText());
+                    CommandCode =  Integer.parseInt(textBox_ram_write_comm_c.getText());
                 }
                 catch (NumberFormatException nfe)
                 {
                     //попытка расшифровать мнемонику
                     String Stemp = textBox_ram_write_comm_c.getText();
-                    tmp = decoder(Stemp);
-                    if (tmp == 0)
+                    CommandCode = decoder(Stemp);
+                    if (CommandCode == 0)
                     {
                         MessageBox("Команда не распознана");
                         fail = true;
@@ -525,10 +525,10 @@ public class EMU extends secondary{
                 if (!fail)
                 {
                     BitSet data = new BitSet(CELL);
-                    if (tmp < 0)
+                    if (CommandCode < 0)
                         data = make_one(0, oper);
                     else 
-                        data = make_one(tmp, oper);
+                        data = make_one(CommandCode, oper);
 
                     if (checkBox_writetoALU.isSelected())
                         ALU.write_RO(data);

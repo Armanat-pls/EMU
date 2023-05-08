@@ -1,6 +1,171 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.BitSet;
 public class compiler {
+    public static final int CELL = 32; //Размер ячейки в бит
+    public static final int MEM = 256; // Количество ячеек памяти
+    public static final int BMEM = 8; // Количество бит на адрес памяти
+
+    public static String show_bitset(BitSet data)   //функция вывода набора битов в строку
+    {
+        String S = "";
+        if (data == null) return S;
+        for (int i = CELL - 1; i >= 0; i--)
+        {
+            if (i % 4 == 3)			
+                S += " ";	
+            if (data.get(i))
+                S += "1";
+            else
+                S += "0";
+        }    
+        return S;
+    }
+        // перевод двоичной в десятичную целое
+        public static int bit_to_int(BitSet data) 
+        {
+            BitSet imp = new BitSet(CELL);
+            imp = (BitSet) data.clone();
+            if (imp.isEmpty())
+                return 0;
+            if (imp.get(CELL - 1))
+            {
+                imp.flip(0, CELL); //получение дополнительного кода
+                if (imp.isEmpty())
+                    return -1;  //все еденицы доп кода это -1
+                return -(int)imp.toLongArray()[0] - 1;
+            }
+            else
+                return (int)imp.toLongArray()[0];   
+        }
+        
+        // перевод десятичной в двоичную целое
+        public static BitSet int_to_bit(int data) 
+        {
+            BitSet imp = new BitSet(CELL);
+            if ((data > 2147483647)||(data < -2147483648))
+                return imp;
+    
+            if (data < 0) //ситуация отрицательности
+                imp.set(CELL - 1);
+            for (int i = CELL-2; i>=0; --i)
+            {
+                if ((int)((data>>i)&1) == 1)
+                    imp.set(i);
+                else
+                    imp.clear(i);
+            }
+            return imp;
+        }
+    
+        //перевод float в двоичный вид
+        public static BitSet float_to_bit(float data)
+        {
+            //при попытке перевода чисел без дробной части, кодировка упоротая, но правильная
+            BitSet imp = new BitSet(CELL);
+            if (data == 0)
+                return imp;
+            if ((data > 3.40282346639e+38) || (data < -3.40282346639e+38))
+                return imp;
+    
+            if (data > 0) //запоминание знака числа + = 0; - = 1
+                imp.clear(CELL - 1);
+            else
+                imp.set(CELL - 1);
+    
+            data = Math.abs(data);
+            int ex = 0;	//порядок
+            if (data >= 1.0)	//при числах >1 порядок растёт
+            {
+                while (data > 2.0)
+                {
+                    data /= 2.0;
+                    ex++;
+                }
+            }
+            else	//при числах <1 порядок убывает
+            {
+                while (data < 1.0)
+                {
+                    data *= 2.0;
+                    ex--;
+                }
+            }
+    
+            ex += 127; //смещение порядка на 127, для удобного хранения отрицательных
+    
+            BitSet tempEx = new BitSet(CELL);
+            tempEx = int_to_bit(ex); //временный набор для хранения двоичного порядка
+            for (int i = 0; i < 8; i++)
+                if (tempEx.get(i))
+                    imp.set(CELL - 9 + i);
+            //  imp[CELL - 9 + i] = tempEx[i];	//запись порядка
+    
+            data -= (float)1.0; // от нормализованной мантисы, отсекаем целую единицу
+            float tmp; //временное хранилище удвоенной мантисы
+            for (int i = 0; i < 23; i++)
+            {
+                tmp = data * (float)2.0;
+                if (tmp > 1.0)
+                {
+                    imp.set(CELL - 10 - i);
+                    //imp[CELL - 10 - i] = 1;
+                    data = (tmp - (float)1.0);
+                }
+                else
+                {
+                    imp.clear(CELL - 10 - i);
+                    //imp[CELL - 10 - i] = 0;
+                    data = tmp;
+                }
+            }
+            return imp;
+        }
+    
+        //перевод двоичного вида во float
+        public static float bit_to_float(BitSet data)
+        {
+            BitSet localData = new BitSet(CELL);
+            localData = (BitSet) data.clone();
+            if (localData.isEmpty())
+                return (float)0.0;
+            boolean sign_neagative = (localData.get(CELL - 1)); //false - положительное ; true - отрицательное
+            BitSet tempEx = new BitSet(CELL);
+            for (int i = 0; i < 8; i++)
+                if (localData.get(CELL - 9 + i))
+                    tempEx.set(i);
+    
+            int ex = bit_to_int(tempEx) - 127; //получение десятичного порядка и смещение
+            float imp = (float)1.0;
+            int bool_to_int = 0;
+            for (int i = 0; i < 23; i++)
+            {
+                bool_to_int = localData.get(CELL - 10 - i) ? 1 : 0;
+                imp += bool_to_int * Math.pow(2, -i - 1);
+            }
+            imp = (float)Math.pow(2.0, ex) * imp;
+            if (sign_neagative) imp *= -1.0; //сделать отрицательным при необходимости
+    
+            return imp;
+        }
+
+    // склеивание двух int в двоичный код
+    public static BitSet make_one(int com, int addr)
+    {
+        BitSet imp = new BitSet(CELL); // переменная для результата
+        BitSet B_com = new BitSet(CELL);
+        B_com = int_to_bit(com); //двоичный код команды
+        BitSet B_addr = new BitSet(CELL);
+        B_addr = int_to_bit(addr); //двоичный код адреса ячейки
+        for (int i = 0; i < BMEM; i++) //склейка
+            if (B_addr.get(i))
+                imp.set(i);
+        for (int i = BMEM; i < CELL; i++)
+            if (B_com.get(i - BMEM))
+                imp.set(i);
+        return imp;
+    }
+
     enum TokenType{
         type,
         numInt,
@@ -43,7 +208,7 @@ public class compiler {
         public float floatVal;
         public int address;
 
-        public VARIABLE(TokenType type, String name, String Val){
+        public VARIABLE(TokenType type, String name, String Val, int addrCount){
             if (type == TokenType.numInt){
                 this.type = VarTypes.intE;
                 this.intVal = Integer.valueOf(Val);
@@ -60,7 +225,7 @@ public class compiler {
                 this.floatVal = 0.0f;
             }
             this.name = name;
-            this.address = 0;
+            this.address = addrCount;
         }
         public String toString(){
             String res = "";
@@ -361,11 +526,12 @@ public class compiler {
         for (VARIABLE var : ib.variablesList) {
             if (var.name.equals(name)) return var;
         }
-        return new VARIABLE(null, "NULL", "NULL");
+        return new VARIABLE(null, "NULL", "NULL", 0);
     }
 
     //########### АНАЛИЗАТОР #############################################################################
     public static class SemanticAnalyser{
+        private static int addrCount = 0;
 
         private static Infoblock ib = new Infoblock();
         private static TokenType lasTokenType = TokenType.EoI;
@@ -400,12 +566,12 @@ public class compiler {
             if (token.tokenType == TokenType.numInt){
                 if (checkType && targetType != VarTypes.intE) return "Type mismatch, expected: " + targetType;
                 if (CreateConstant && getVarbyName(ib, token.value).type == VarTypes.NULLE)
-                    ib.variablesList.add(new VARIABLE(TokenType.numInt, token.value, token.value));
+                    ib.variablesList.add(new VARIABLE(TokenType.numInt, token.value, token.value, ++addrCount));
             }
             else if (token.tokenType == TokenType.numFloat){
                 if (checkType && targetType != VarTypes.floatE) return "Type mismatch, expected: " + targetType;
                 if (CreateConstant && getVarbyName(ib, token.value).type == VarTypes.NULLE)
-                    ib.variablesList.add(new VARIABLE(TokenType.numFloat, token.value, token.value));
+                    ib.variablesList.add(new VARIABLE(TokenType.numFloat, token.value, token.value, ++addrCount));
             }
             else if (token.tokenType == TokenType.varName){
                 tmpVar = getVarbyName(ib, token.value);
@@ -464,11 +630,11 @@ public class compiler {
                         continue;
                     }
                     if (token.tokenType == TokenType.varName){
-                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, "0"));
+                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, "0", ++addrCount));
                         ib.instructionsList.add(new INSTRUCTION(InstrType.asign, nameBuffer, token.value, null, null, 0, 0));
                     }
                     else
-                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value));
+                        ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, ++addrCount));
                 
                     if (!getNextToken(TableOfTokens)) break;
                     if (token.tokenType != TokenType.EoI){
@@ -630,6 +796,56 @@ public class compiler {
             return ib;
         }
     }
+    
+    //########### ТРАНСЛЯТОР #############################################################################
+    public static class Translator{
+        private static ArrayList<String> errors;
+        private static int MEMcount = 0;
+
+        private static BitSet[] BitSets = new BitSet[MEM];
+        public static ArrayList<String> Compile(Infoblock ib){
+            errors = new ArrayList<String>();
+            if (ib.variablesList.size() + ib.instructionsList.size() >= MEM){
+                errors.add("Memory overload. varCount: " + ib.variablesList.size() + ", instrCount: " + ib.instructionsList.size());
+                return errors;
+            }
+            else if(ib.instructionsList.size() >= MEM){
+                errors.add("Memory overload. instrCount: " + ib.instructionsList.size());
+                return errors;
+            }
+            else if(ib.variablesList.size() >= MEM){
+                errors.add("Memory overload. varCount: " + ib.variablesList.size());
+                return errors;
+            }
+            
+            //заполнение данных
+            for (VARIABLE var : ib.variablesList){
+                if (MEMcount >= MEM - 1) errors.add("Memory overload, shouldn't be impossible");
+                if (var.type == VarTypes.intE)
+                    BitSets[++MEMcount] = int_to_bit(var.intVal);
+                else if (var.type == VarTypes.floatE)
+                    BitSets[++MEMcount] = float_to_bit(var.floatVal);
+                else errors.add("Type NULL, shouldn't be impossible");      
+            }
+            BitSets[0] = make_one( 4089, ++MEMcount);
+
+
+            FileWriter writer;
+            
+            try{
+                writer = new FileWriter("compiler\\result.txt");
+                for (int i = 0; i < MEM; i++)
+                    writer.write(show_bitset(BitSets[i]) + "\n");
+                writer.close();
+            }
+            catch(IOException e){
+                System.out.println(e);
+            }
+            
+            return errors;
+        }
+    }
+    
     public static void printTokens(ArrayList<TOKEN> TableOfTokens){
         for (TOKEN token : TableOfTokens) {
             System.out.print(token.toString());
@@ -655,16 +871,13 @@ public class compiler {
     public static void main(String[] args) {
         ArrayList<TOKEN> TableOfTokens = Lexer.lexerAnalyse("compiler\\test.txt");
         Infoblock ib = SemanticAnalyser.CheckSemantic(TableOfTokens); 
-
         //printErrors(ib.errorrsList);
-
         if (ib.errorrsList.size() == 0){
+            Translator.Compile(ib);
             //printTokens(TableOfTokens);
-            //printVariables(ib.variablesList);
-            printInstructions(ib.instructionsList);
+            printVariables(ib.variablesList);
+            //printInstructions(ib.instructionsList);
         }
-
-        
     }
 }
 

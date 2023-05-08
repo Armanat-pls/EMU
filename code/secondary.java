@@ -151,7 +151,7 @@ public class secondary extends Tclass {
         B_com = int_to_bit(com); //двоичный код команды
         BitSet B_addr = new BitSet(CELL);
         B_addr = int_to_bit(addr); //двоичный код адреса ячейки
-        for (int i = 0; i < BMEM;i++) //склейка
+        for (int i = 0; i < BMEM; i++) //склейка
             if (B_addr.get(i))
                 imp.set(i);
         for (int i = BMEM; i < CELL; i++)
@@ -242,6 +242,34 @@ public class secondary extends Tclass {
             if (RAM.get_cell(A).isEmpty())
                 res = 1;
             else res = 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("LESS"))
+        {   //логическое МЕНЬШЕ
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            res = op1 < op2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("LESSOE"))
+        {   //логическое МЕНЬШЕ ИЛИ РАВНО
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            res = op1 <= op2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("FLESS"))
+        {   //логическое МЕНЬШЕ FLOAT
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            res = fop1 < fop2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("FLESSOE"))
+        {   //логическое МЕНЬШЕ ИЛИ РАВНО FLOAT
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            res = fop1 <= fop2 ? 1 : 0;
             ALU.write_RO(int_to_bit(res));
         }
         else if (C == CMSmap.get("PLUS"))
