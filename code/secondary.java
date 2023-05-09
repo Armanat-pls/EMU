@@ -241,7 +241,7 @@ public class secondary extends Tclass {
         }
         else if (C == CMSmap.get("NOT"))
         {   //логиеское НЕ (если операнд 0 сделать 1, и наоборот)
-            if (RAM.get_cell(A).isEmpty())
+            if (ALU.get_RO().isEmpty())
                 res = 1;
             else res = 0;
             ALU.write_RO(int_to_bit(res));
@@ -421,7 +421,7 @@ public class secondary extends Tclass {
         public static class LexicError{
             private String error;
             private TOKEN token;
-            
+
             public LexicError(TOKEN token, String error){
                 this.token = token;
                 this.error = error;
@@ -978,7 +978,16 @@ public class secondary extends Tclass {
             private static ArrayList<String> errors;
             private static int MEMcount = 0;
     
+            private static int blocklvl = 0;
+            private static int prevblocklvl = 0;
             private static BitSet[] BitSets = new BitSet[MEM];
+            private static boolean MEMcntUP(){
+                if (++MEMcount < MEM) return true;
+                else{
+                    errors.add("Memory overload");
+                    return false;
+                }
+            }
             public static ArrayList<String> Compile(Infoblock ib){
                 errors = new ArrayList<String>();
                 if (ib.variablesList.size() + ib.instructionsList.size() >= MEM + 1){
@@ -996,39 +1005,79 @@ public class secondary extends Tclass {
                 
                 //заполнение данных
                 for (VARIABLE var : ib.variablesList){
-                    if (MEMcount >= MEM - 1) errors.add("Memory overload, shouldn't be impossible");
+                    if (!MEMcntUP()) break;
                     if (var.type == VarTypes.intE)
-                        BitSets[++MEMcount] = int_to_bit(var.intVal);
+                        BitSets[MEMcount] = int_to_bit(var.intVal);
                     else if (var.type == VarTypes.floatE)
-                        BitSets[++MEMcount] = float_to_bit(var.floatVal);
+                        BitSets[MEMcount] = float_to_bit(var.floatVal);
                     else errors.add("Type NULL, shouldn't be impossible");      
                 }
-                BitSets[0] = make_one( 4089, ++MEMcount);
+                if (!MEMcntUP()) return errors;
+                BitSets[0] = make_one( CMSmap.get("JUMP"), MEMcount);
     
                 for (INSTRUCTION instr : ib.instructionsList) {
                     if (MEMcount >= MEM){
                         errors.add("Memory overload");
                         break;
                     }
+                    prevblocklvl = blocklvl;
+                    blocklvl = instr.blockDeep;
+                    if (prevblocklvl < blocklvl){   //ситуация входа в блок
+                        BitSets[MEMcount] = make_one(CMSmap.get("STOP"), blocklvl);
+                        if (!MEMcntUP()) break;
+                    }
+                    else if (prevblocklvl > blocklvl){  //ситуация выхода из блока
+                        BitSets[MEMcount] = make_one(CMSmap.get("STOP"), blocklvl);
+                        if (!MEMcntUP()) break;
+                    }
+                    VarTypes operationType;
                     if (instr.type == InstrType.asign){
-                        
+                        BitSets[MEMcount] = make_one(CMSmap.get("LOAD"), Integer.valueOf(getVarbyName(ib, instr.operand1).address));
+                        if (!MEMcntUP()) break;
+                        BitSets[MEMcount] = make_one(CMSmap.get("SAVE"), Integer.valueOf(getVarbyName(ib, instr.writeTo).address));
+                        if (!MEMcntUP()) break;
                     }
                     else if (instr.type == InstrType.ariph){
-    
+                        BitSets[MEMcount] = make_one(CMSmap.get("LOAD"), Integer.valueOf(getVarbyName(ib, instr.operand1).address));
+                        if (!MEMcntUP()) break;
+                        operationType = getVarbyName(ib, instr.writeTo).type;
+                        String F = operationType == VarTypes.intE ? "" : "F";
+                        String COMM = "";
+                        if (instr.operator.equals("+"))
+                            COMM = "PLUS";
+                        else if (instr.operator.equals("-"))
+                            COMM = "MINUS";
+                        else if (instr.operator.equals("*"))
+                            COMM = "MULT";
+                        else if (instr.operator.equals("/"))
+                            COMM = "DIVIS";
+                        BitSets[MEMcount] = make_one(CMSmap.get(F + COMM), Integer.valueOf(getVarbyName(ib, instr.operand2).address));
+                        if (!MEMcntUP()) break;
+                        BitSets[MEMcount] = make_one(CMSmap.get("SAVE"), Integer.valueOf(getVarbyName(ib, instr.writeTo).address));
+                        if (!MEMcntUP()) break;
+                    }
+                    else if (instr.type == InstrType.whileblock){
+                        
+                    }
+                    else if (instr.type == InstrType.ifblock){
+                        
+                    }
+                    else if (instr.type == InstrType.elseblock){
+                        
                     }
                 }
-                //запись файла
-                FileWriter writer;
-                try{
-                    writer = new FileWriter("compiler\\result.txt");
-                    for (int i = 0; i < MEM; i++)
-                        writer.write(show_bitset(BitSets[i]) + "\n");
-                    writer.close();
+                if (errors.size() == 0){
+                    FileWriter writer;
+                    try{
+                        writer = new FileWriter("compiler\\result.txt");
+                        for (int i = 0; i < MEM; i++)
+                            writer.write(show_bitset(BitSets[i]) + "\n");
+                        writer.close();
+                    }
+                    catch(IOException e){
+                        System.out.println(e);
+                    }
                 }
-                catch(IOException e){
-                    System.out.println(e);
-                }
-                
                 return errors;
             }
         }

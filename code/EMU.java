@@ -753,20 +753,23 @@ public class EMU extends secondary{
     }
 
     public static void main(String[] args) {
-		//UI app = new UI();
-		//app.setVisible(true);
 
+        int bak = 2;
 
-
-        ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
-        compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
-        //printErrors(ib.errorrsList);
-        if (ib.errorrsList.size() == 0){
-            compiler.Translator.Compile(ib);
-            //compiler.printTokens(TableOfTokens);
-            compiler.printVariables(ib.variablesList);
-            compiler.printInstructions(ib.instructionsList);
+        if (bak == 1){
+            UI app = new UI();
+            app.setVisible(true); 
+        }
+        else{
+            ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
+            compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
+            compiler.printErrors(ib.errorrsList);
+            if (ib.errorrsList.size() == 0){
+                compiler.Translator.Compile(ib);
+                //compiler.printTokens(TableOfTokens);
+                compiler.printVariables(ib.variablesList);
+                compiler.printInstructions(ib.instructionsList);
+            }
         }
 	}
 }
-
