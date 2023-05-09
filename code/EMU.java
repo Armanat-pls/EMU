@@ -754,7 +754,7 @@ public class EMU extends secondary{
 
     public static void main(String[] args) {
 
-        int bak = 2;
+        int bak = 1;
 
         if (bak == 1){
             UI app = new UI();
@@ -768,7 +768,7 @@ public class EMU extends secondary{
                 compiler.Translator.Compile(ib);
                 //compiler.printTokens(TableOfTokens);
                 compiler.printVariables(ib.variablesList);
-                compiler.printInstructions(ib.instructionsList);
+                //compiler.printInstructions(ib.instructionsList);
             }
         }
 	}

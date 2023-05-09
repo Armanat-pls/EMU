@@ -260,6 +260,20 @@ public class secondary extends Tclass {
             res = op1 <= op2 ? 1 : 0;
             ALU.write_RO(int_to_bit(res));
         }
+        else if (C == CMSmap.get("EQUAL"))
+        {   //логическое РАВНО
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            res = op1 == op2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("NOTEQUAL"))
+        {   //логическое НЕ РАВНО
+            op1 = bit_to_int(ALU.get_RO());
+            op2 = bit_to_int(RAM.get_cell(A));
+            res = op1 != op2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
         else if (C == CMSmap.get("FLESS"))
         {   //логическое МЕНЬШЕ FLOAT
             fop1 = bit_to_float(ALU.get_RO());
@@ -272,6 +286,20 @@ public class secondary extends Tclass {
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
             res = fop1 <= fop2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("FEQUAL"))
+        {   //логическое РАВНО  FLOAT
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            res = fop1 == fop2 ? 1 : 0;
+            ALU.write_RO(int_to_bit(res));
+        }
+        else if (C == CMSmap.get("FNOTEQUAL"))
+        {   //логическое НЕ РАВНО   FLOAT
+            fop1 = bit_to_float(ALU.get_RO());
+            fop2 = bit_to_float(RAM.get_cell(A));
+            res = fop1 != fop2 ? 1 : 0;
             ALU.write_RO(int_to_bit(res));
         }
         else if (C == CMSmap.get("PLUS"))
@@ -328,7 +356,7 @@ public class secondary extends Tclass {
             fres = (fop1 * fop2);
             ALU.write_RO(float_to_bit(fres));
         }
-        else if (C == CMSmap.get("FMINUS"))
+        else if (C == CMSmap.get("FDIVIS"))
         {
             fop1 = bit_to_float(ALU.get_RO());
             fop2 = bit_to_float(RAM.get_cell(A));
@@ -440,7 +468,9 @@ public class secondary extends Tclass {
             asign,
             whileblock,
             ifblock,
-            elseblock
+            elseblock,
+            endblock,
+            endprog,
         }
     
         public static class INSTRUCTION{
@@ -450,16 +480,18 @@ public class secondary extends Tclass {
             String operator;
             String operand2;
             int blockDeep;
-            int childrenDeep;
-    
-            public INSTRUCTION(InstrType type, String writeTo, String operand1, String operator, String operand2, int blockDeep, int childrenDeep){
+
+            public INSTRUCTION(InstrType type, String writeTo, String operand1, String operator, String operand2, int blockDeep){
                 this.type = type;
                 this.writeTo = writeTo;
                 this.operand1 = operand1;
                 this.operator = operator;
                 this.operand2 = operand2;
                 this.blockDeep = blockDeep;
-                this.childrenDeep = childrenDeep;
+            }
+            public INSTRUCTION(InstrType type, int blockDeep){
+                this.type = type;
+                this.blockDeep = blockDeep;
             }
             public String toString(){
                 String log = "";
@@ -470,7 +502,6 @@ public class secondary extends Tclass {
                 log += "Operator: " + operator  + "\n";
                 log += "Operand 2: " + operand2 + "\n";
                 log += "Block deepness: " + blockDeep + "\n";
-                log += "Children deepness: " + childrenDeep + "\n";
                 log += "========\n";
                 return log;
             }
@@ -807,7 +838,7 @@ public class secondary extends Tclass {
                         }
                         if (token.tokenType == TokenType.varName){
                             ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, "0", ++addrCount));
-                            ib.instructionsList.add(new INSTRUCTION(InstrType.asign, nameBuffer, token.value, null, null, 0, 0));
+                            ib.instructionsList.add(new INSTRUCTION(InstrType.asign, nameBuffer, token.value, null, null, 0));
                         }
                         else
                             ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, ++addrCount));
@@ -853,7 +884,7 @@ public class secondary extends Tclass {
                         if (!getNextToken(TableOfTokens)) break;
                         if (token.tokenType == TokenType.EoI){
                             if (ib.errorrsList.size() == 0)
-                                ib.instructionsList.add(new INSTRUCTION(InstrType.asign, writeToBuffer, operand1Buffer, null, null, blockLayers.size(), 0));
+                                ib.instructionsList.add(new INSTRUCTION(InstrType.asign, writeToBuffer, operand1Buffer, null, null, blockLayers.size()));
                             continue;
                         }
     
@@ -877,7 +908,7 @@ public class secondary extends Tclass {
                             continue;
                         }
                         if (ib.errorrsList.size() == 0)
-                            ib.instructionsList.add(new INSTRUCTION(InstrType.ariph, writeToBuffer, operand1Buffer, operatorBuffer, operand2Buffer, blockLayers.size(), 0));
+                            ib.instructionsList.add(new INSTRUCTION(InstrType.ariph, writeToBuffer, operand1Buffer, operatorBuffer, operand2Buffer, blockLayers.size()));
                     }
                     else if (token.tokenType == TokenType.struct && token.value.equals("}")){ //сценарий закрытия блока
                         int layer = blockLayers.size();
@@ -893,6 +924,7 @@ public class secondary extends Tclass {
                             }
                         }
                         blockLayers.remove(layer - 1);
+                        ib.instructionsList.add(new INSTRUCTION(InstrType.endblock, blockLayers.size()));
                     }
                     else if (token.tokenType == TokenType.word){ // сценарий блока
                         if (token.value.equals("else")){
@@ -906,7 +938,7 @@ public class secondary extends Tclass {
                                 ib.errorrsList.add(new LexicError(token, "Enexpected block opening"));
                                 continue;
                             }
-                            ib.instructionsList.add(new INSTRUCTION(InstrType.elseblock, null, null, null, null, blockLayers.size(), blockLayers.size() + 1));
+                            ib.instructionsList.add(new INSTRUCTION(InstrType.elseblock, null, null, null, null, blockLayers.size()));
                             blockLayers.add(InstrType.elseblock);
                         }
                         else {
@@ -963,12 +995,13 @@ public class secondary extends Tclass {
                                 continue;
                             }
                             if (ib.errorrsList.size() == 0)
-                                ib.instructionsList.add(new INSTRUCTION(ItypeBuffer, null, operand1Buffer, operatorBuffer, operand2Buffer, blockLayers.size(), blockLayers.size() + 1));
+                                ib.instructionsList.add(new INSTRUCTION(ItypeBuffer, null, operand1Buffer, operatorBuffer, operand2Buffer, blockLayers.size()));
                             blockLayers.add(ItypeBuffer);
     
                         }
                     }
                 }
+                ib.instructionsList.add(new INSTRUCTION(InstrType.endprog, 0));
                 return ib;
             }
         }
@@ -977,10 +1010,26 @@ public class secondary extends Tclass {
         public static class Translator{
             private static ArrayList<String> errors;
             private static int MEMcount = 0;
-    
-            private static int blocklvl = 0;
-            private static int prevblocklvl = 0;
+
             private static BitSet[] BitSets = new BitSet[MEM];
+            private static ArrayList<BlockHead> blocks;
+            private static boolean checkIf = false;
+            private static class BlockHead{
+                InstrType type;
+                //поля для while и if-else
+                int conditionPos;   //  Адрес ячейки с првоеркой условия 
+                int jumpPos;        //  Адрес ячейки с прыжком через блок, если условие не выполнено
+
+                //поля для if-else
+                public int blockEndPos;    //  Адрес ячейки в конце блока, если нужно перепрыгнуть else. Заполняется по завершению блока.
+
+                public BlockHead(InstrType type, int conditionPos, int jumpPos){
+                    this.type = type;
+                    this.conditionPos = conditionPos;
+                    this.jumpPos = jumpPos;
+                }
+
+            }
             private static boolean MEMcntUP(){
                 if (++MEMcount < MEM) return true;
                 else{
@@ -989,6 +1038,7 @@ public class secondary extends Tclass {
                 }
             }
             public static ArrayList<String> Compile(Infoblock ib){
+                blocks = new ArrayList<BlockHead>();
                 errors = new ArrayList<String>();
                 if (ib.variablesList.size() + ib.instructionsList.size() >= MEM + 1){
                     errors.add("Memory overload. varCount: " + ib.variablesList.size() + ", instrCount: " + ib.instructionsList.size());
@@ -1020,17 +1070,11 @@ public class secondary extends Tclass {
                         errors.add("Memory overload");
                         break;
                     }
-                    prevblocklvl = blocklvl;
-                    blocklvl = instr.blockDeep;
-                    if (prevblocklvl < blocklvl){   //ситуация входа в блок
-                        BitSets[MEMcount] = make_one(CMSmap.get("STOP"), blocklvl);
-                        if (!MEMcntUP()) break;
+                    if (checkIf && instr.type != InstrType.elseblock){
+                        MEMcount--;
+                        blocks.remove(blocks.size() - 1);
                     }
-                    else if (prevblocklvl > blocklvl){  //ситуация выхода из блока
-                        BitSets[MEMcount] = make_one(CMSmap.get("STOP"), blocklvl);
-                        if (!MEMcntUP()) break;
-                    }
-                    VarTypes operationType;
+                    checkIf = false;
                     if (instr.type == InstrType.asign){
                         BitSets[MEMcount] = make_one(CMSmap.get("LOAD"), Integer.valueOf(getVarbyName(ib, instr.operand1).address));
                         if (!MEMcntUP()) break;
@@ -1040,8 +1084,7 @@ public class secondary extends Tclass {
                     else if (instr.type == InstrType.ariph){
                         BitSets[MEMcount] = make_one(CMSmap.get("LOAD"), Integer.valueOf(getVarbyName(ib, instr.operand1).address));
                         if (!MEMcntUP()) break;
-                        operationType = getVarbyName(ib, instr.writeTo).type;
-                        String F = operationType == VarTypes.intE ? "" : "F";
+                        String F = getVarbyName(ib, instr.writeTo).type == VarTypes.intE ? "" : "F";
                         String COMM = "";
                         if (instr.operator.equals("+"))
                             COMM = "PLUS";
@@ -1056,14 +1099,60 @@ public class secondary extends Tclass {
                         BitSets[MEMcount] = make_one(CMSmap.get("SAVE"), Integer.valueOf(getVarbyName(ib, instr.writeTo).address));
                         if (!MEMcntUP()) break;
                     }
-                    else if (instr.type == InstrType.whileblock){
-                        
-                    }
-                    else if (instr.type == InstrType.ifblock){
-                        
+                    else if (instr.type == InstrType.whileblock || instr.type == InstrType.ifblock){
+                        int conditionPosBuffer;
+                        int jumpPosBuffer;
+
+                        conditionPosBuffer = MEMcount;  // На этот адрес нужно будет возвращатсья в конце while блока;
+                        BitSets[MEMcount] = make_one(CMSmap.get("LOAD"), Integer.valueOf(getVarbyName(ib, instr.operand1).address));
+                        if (!MEMcntUP()) break;
+                        String F = getVarbyName(ib, instr.operand1).type == VarTypes.intE ? "" : "F";
+                        String COMM = "";
+                        if (instr.operator.equals("<"))
+                            COMM = "LESS";
+                        else if (instr.operator.equals("<="))
+                            COMM = "LESSOE";
+                        else if (instr.operator.equals("=="))
+                            COMM = "EQUAL";
+                        else if (instr.operator.equals("!="))
+                            COMM = "NOTEQUAL";
+                        BitSets[MEMcount] = make_one(CMSmap.get(F + COMM), Integer.valueOf(getVarbyName(ib, instr.operand2).address));
+                        if (!MEMcntUP()) break;
+                        BitSets[MEMcount] = make_one(CMSmap.get("NOT"), 0);
+                        if (!MEMcntUP()) break;
+                        jumpPosBuffer = MEMcount;   //  По этому адресу нужно будет расположить команду команду прыжка через блок.
+                        if (!MEMcntUP()) break;
+                        blocks.add(new BlockHead(instr.type, conditionPosBuffer, jumpPosBuffer));                        
                     }
                     else if (instr.type == InstrType.elseblock){
-                        
+                        blocks.add(new BlockHead(instr.type, 0, 0));
+                    }
+                    else if (instr.type == InstrType.endblock){
+                        BlockHead lastBlockHead = blocks.get(blocks.size() - 1);
+                        if (lastBlockHead.type == InstrType.whileblock){
+                            BitSets[MEMcount] = make_one(CMSmap.get("JUMP"), lastBlockHead.conditionPos);
+                            if (!MEMcntUP()) break;
+                            BitSets[lastBlockHead.jumpPos] = make_one(CMSmap.get("IFJUMP"), MEMcount);
+                            blocks.remove(blocks.size() - 1);
+                        }
+                        else if (lastBlockHead.type == InstrType.ifblock){
+                            lastBlockHead.blockEndPos = MEMcount;
+                            blocks.set(blocks.size() - 1, lastBlockHead);
+                            if (!MEMcntUP()) break;
+                            BitSets[lastBlockHead.jumpPos] = make_one(CMSmap.get("IFJUMP"), MEMcount);
+                            // если за if не идёт else, этот блок будет удалён. Удаление происходит в начале цикла.
+                            checkIf = true;
+                        }
+                        else if (lastBlockHead.type == InstrType.elseblock){
+                            lastBlockHead = blocks.get(blocks.size() - 2);
+                            BitSets[lastBlockHead.blockEndPos] = make_one(CMSmap.get("JUMP"), MEMcount);
+                            blocks.remove(blocks.size() - 1);
+                            blocks.remove(blocks.size() - 1);
+                        }
+                    }
+                    else if (instr.type == InstrType.endprog){
+                        BitSets[MEMcount] = make_one(CMSmap.get("STOP"), 0);
+                        break;
                     }
                 }
                 if (errors.size() == 0){
