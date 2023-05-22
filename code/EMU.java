@@ -28,7 +28,8 @@ public class EMU extends secondary{
 
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
-        private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");       
+        private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");
+        private JButton button_RunCompiler = new JButton("<html><div align='center'>Компилятор</div></html>");     
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("СЧАК");
@@ -131,7 +132,7 @@ public class EMU extends secondary{
 
 
 //======================================================
-//          Кнопки очистки памяти, заполнения из файла
+//          Кнопки очистки памяти, заполнения из файла, запуска компилятора
 
             baseX = 10;
             baseY = 565;
@@ -143,6 +144,9 @@ public class EMU extends secondary{
 
             button_dumpRAM.setBounds(baseX + 240, baseY, 110, 65);
             button_dumpRAM.addActionListener(new Button_dumpRAM_EventListener());
+
+            button_RunCompiler.setBounds(baseX  + 360, baseY, 110, 65);
+            button_RunCompiler.addActionListener(new Button_RunCompiler_EventListener());
 
 
 //======================================================
@@ -310,6 +314,7 @@ public class EMU extends secondary{
             container.add(button_clearRAM);
             container.add(button_fillRAM);
             container.add(button_dumpRAM);
+            container.add(button_RunCompiler);
             refreshUI();                 
         }
         
@@ -388,6 +393,14 @@ public class EMU extends secondary{
                         MessageBox("Не удалось создать файл");
                     }
                 }
+            }
+        }
+
+        //КНОПКА ЗАПУСКА КОМПИЛЯТОРА
+        class Button_RunCompiler_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                UIcompiler app2 = new UIcompiler();
+                app2.setVisible(true);
             }
         }
 
@@ -740,6 +753,7 @@ public class EMU extends secondary{
             button_clearRAM.setEnabled(state);
             button_dumpRAM.setEnabled(state);
             button_fillRAM.setEnabled(state);
+            button_RunCompiler.setEnabled(state);
             button_ramwrite_clean.setEnabled(state);
             button_ramwrite_coms.setEnabled(state);
             button_ramwrite_data.setEnabled(state);
@@ -751,25 +765,145 @@ public class EMU extends secondary{
     public static void MessageBox(String data){
         JOptionPane.showMessageDialog(null, data, "", JOptionPane.PLAIN_MESSAGE);
     }
+    static class UIcompiler extends JFrame{
+        //кнопки 
+        private JButton button_chooseSource = new JButton("<html><div align='center'>Выбрать...</div></html>"); 
+        private JButton button_chooseTarget = new JButton("<html><div align='center'>Выбрать...</div></html>"); 
+        private JButton button_run = new JButton("<html><div align='center'>Скомпилировать</div></html>");
 
-    public static void main(String[] args) {
+        //текстовые поля
+        private JLabel label_chooseSource = new JLabel("Исходный файл");
+        private JLabel label_chooseTarget = new JLabel("Путь сохранения");
+        private JTextField textBox_chooseSource = new JTextField();
+        private JTextField textBox_chooseTarget = new JTextField();
+        
 
-        int bak = 1;
 
-        if (bak == 1){
-            UI app = new UI();
-            app.setVisible(true); 
+        //панель ошибкок, токенов, переменных, инструкций
+        private JTabbedPane tabbedPane = new JTabbedPane();
+
+
+        private DefaultListModel<String> listErrors_model = new DefaultListModel<String>();
+        private JList<String> list_Errors_list = new JList<String>(listErrors_model);
+        private JComponent panelErrorrs = new JScrollPane(list_Errors_list);
+
+        private DefaultListModel<String> listTokens_model = new DefaultListModel<String>();
+        private JList<String> list_Tokens_list = new JList<String>(listTokens_model);
+        private JComponent panelTokens = new JScrollPane(list_Tokens_list);
+
+        private DefaultListModel<String> listVariables_model = new DefaultListModel<String>();
+        private JList<String> list_Variables_list = new JList<String>(listVariables_model);
+        private JComponent panelVariables = new JScrollPane(list_Variables_list);
+
+        private DefaultListModel<String> listInstructions_model = new DefaultListModel<String>();
+        private JList<String> list_Instructions_list = new JList<String>(listInstructions_model);
+        private JComponent panelInstructions = new JScrollPane(list_Instructions_list);
+
+
+        public UIcompiler(){
+            super("Компилятор");
+            this.setBounds(100,100,600,500);
+
+            Container container = this.getContentPane();
+            container.setLayout(null);
+
+            int baseX = 10;    //базовые координаты блока
+            int baseY = 5;
+            label_chooseSource.setBounds(baseX, baseY, 300, 25);
+            textBox_chooseSource.setBounds(baseX,baseY + 20, 300, 25);
+            label_chooseTarget.setBounds(baseX, baseY + 45, 300, 25);
+            textBox_chooseTarget.setBounds(baseX,baseY + 65, 300, 25);
+
+            button_chooseSource.setBounds(baseX + 310, baseY + 19, 100, 25);  
+            button_chooseSource.addActionListener(new Button_chooseSourceEventListener());
+
+            button_chooseTarget.setBounds(baseX + 310, baseY + 64, 100, 25); 
+            button_chooseTarget.addActionListener(new Button_chooseTargetEventListener());
+
+            button_run.setBounds(baseX + 420, baseY + 26, 150, 55); 
+            button_run.addActionListener(new Button_runEventListener());
+
+            tabbedPane.setBounds(baseX, baseY + 100, 530, 300);
+            tabbedPane.addTab("Ошибки", panelErrorrs);
+            tabbedPane.addTab("Токены", panelTokens);
+            tabbedPane.addTab("Переменные", panelVariables);
+            tabbedPane.addTab("Инструкции", panelInstructions);
+
+
+            container.add(label_chooseSource);
+            container.add(textBox_chooseSource);
+            container.add(label_chooseTarget);
+            container.add(textBox_chooseTarget);
+            container.add(button_chooseSource);
+            container.add(button_chooseTarget);
+            container.add(button_run);
+            container.add(tabbedPane);
         }
-        else{
-            ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
-            compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
-            compiler.printErrors(ib.errorrsList);
-            if (ib.errorrsList.size() == 0){
-                compiler.Translator.Compile(ib);
-                //compiler.printTokens(TableOfTokens);
-                compiler.printVariables(ib.variablesList);
-                //compiler.printInstructions(ib.instructionsList);
+
+        //КНОПКА ВЫБОРА ИСХОДНОГО ФАЙЛА 
+        class Button_chooseSourceEventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser source_fileChooser = new JFileChooser();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
+                source_fileChooser.setFileFilter(filter);
+                source_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
+                int ret = source_fileChooser.showDialog(null, "Открыть файл");
+                if (ret == JFileChooser.APPROVE_OPTION){
+                    String target = source_fileChooser.getSelectedFile().getAbsolutePath();
+                    textBox_chooseSource.setText(target);
+                }
             }
         }
+
+        //КНОПКА ВЫБОРА ФАЙЛА РЕЗУЛЬТАТА 
+        class Button_chooseTargetEventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser target_fileChooser = new JFileChooser();
+                target_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
+                target_fileChooser.setFileFilter(filter);
+                int ret = target_fileChooser.showDialog(null, "Выбрать файл для сохранения");
+                if (ret == JFileChooser.APPROVE_OPTION){
+                    String target = target_fileChooser.getSelectedFile().getAbsolutePath();
+                    textBox_chooseTarget.setText(target);
+                }
+            }
+        }
+        //КНОПКА ЗАПУСКА
+        class Button_runEventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                MessageBox("Поiхали");
+                ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
+                compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
+                listErrors_model.clear();
+                listTokens_model.clear();
+                listVariables_model.clear();
+                listInstructions_model.clear();
+
+                for (String token : compiler.printTokens(TableOfTokens)) {
+                    listTokens_model.addElement(token);
+                }
+
+                if (ib.errorrsList.size() != 0){
+                    for (String error : compiler.printErrors(ib.errorrsList)) {
+                        listErrors_model.addElement(error);
+                    }
+                }
+                else{
+                    compiler.Translator.Compile(ib);
+
+                    for (String variable : compiler.printVariables(ib.variablesList)) {
+                        listVariables_model.addElement(variable);
+                    }
+                    for (String instruction : compiler.printInstructions(ib.instructionsList)) {
+                        listInstructions_model.addElement(instruction);
+                    }
+                }
+            }
+        }
+    }
+    public static void main(String[] args) {
+        UI app = new UI();
+        app.setVisible(true);
 	}
 }

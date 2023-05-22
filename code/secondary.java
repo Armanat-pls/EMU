@@ -436,13 +436,11 @@ public class secondary extends Tclass {
             }
             public String toString(){
                 String res = "";
-                res += "======== VARIABLE ========\n";
                 res += "type: " + this.type + "\n";
                 res += "name: " + this.name + "\n";
                 res += "intVal: " + this.intVal + "\n";
                 res += "floatVal: " + this.floatVal + "\n";
                 res += "address: " + this.address + "\n";
-                res += "========\n";
                 return res;
             }
         }
@@ -456,10 +454,8 @@ public class secondary extends Tclass {
             }
             public String toString(){
                 String log = "";
-                log += "======== ERROR ========\n";
-                log += "On token " + token.toString() + "\n";
-                log += "Error: " + error + "\n";
-                log += "========\n";
+                log += token.toString() + "     |    ";
+                log += "Error: " + error;
                 return log;
             }
         }
@@ -495,14 +491,12 @@ public class secondary extends Tclass {
             }
             public String toString(){
                 String log = "";
-                log += "======== INSTRUCTION ========\n";
                 log += "Operation: " + type.toString() + "\n";
                 log += "WriteTo: " + writeTo + "\n";
                 log += "Operand 1: " + operand1 + "\n";
                 log += "Operator: " + operator  + "\n";
                 log += "Operand 2: " + operand2 + "\n";
                 log += "Block deepness: " + blockDeep + "\n";
-                log += "========\n";
                 return log;
             }
         }
@@ -860,7 +854,7 @@ public class secondary extends Tclass {
                                 break;
                             }
                         if (!varExists){
-                            ib.errorrsList.add(new LexicError(token, "variable doesn't exist"));
+                            ib.errorrsList.add(new LexicError(token, "Variable doesn't exist"));
                             continue;
                         }
                         String writeToBuffer = token.value;
@@ -1171,27 +1165,35 @@ public class secondary extends Tclass {
             }
         }
         
-        public static void printTokens(ArrayList<TOKEN> TableOfTokens){
+        public static ArrayList<String> printTokens(ArrayList<TOKEN> TableOfTokens){
+            ArrayList<String> tokens = new ArrayList<String>();
             for (TOKEN token : TableOfTokens) {
-                System.out.print(token.toString());
+                tokens.add(token.toString());
             }
+            return tokens;
         }
-        public static void printErrors(ArrayList<LexicError> LexicErrors){
+        public static ArrayList<String> printErrors(ArrayList<LexicError> LexicErrors){
+            ArrayList<String> errors = new ArrayList<String>();
             if (LexicErrors.size() > 0){
                 for (LexicError error : LexicErrors) {
-                    System.out.print(error.toString());
+                    errors.add(error.toString());
                 }
             }
+            return errors;
         }
-        public static void printVariables(ArrayList<VARIABLE> VariablesList){
+        public static ArrayList<String> printVariables(ArrayList<VARIABLE> VariablesList){
+            ArrayList<String> variables = new ArrayList<String>();
             for (VARIABLE var : VariablesList) {
-                System.out.print(var.toString());
+                variables.add(var.toString());
             }
+            return variables;
         }
-        public static void printInstructions(ArrayList<INSTRUCTION> InstructionsList){
+        public static ArrayList<String> printInstructions(ArrayList<INSTRUCTION> InstructionsList){
+            ArrayList<String> instructions = new ArrayList<String>();
             for (INSTRUCTION instruction : InstructionsList) {
-                System.out.print(instruction.toString());
+                instructions.add(instruction.toString());
             }
+            return instructions;
         }        
     }   
 
