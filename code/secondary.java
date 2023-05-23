@@ -436,11 +436,13 @@ public class secondary extends Tclass {
             }
             public String toString(){
                 String res = "";
-                res += "type: " + this.type + "\n";
-                res += "name: " + this.name + "\n";
-                res += "intVal: " + this.intVal + "\n";
-                res += "floatVal: " + this.floatVal + "\n";
-                res += "address: " + this.address + "\n";
+                if (address < 10) res = "     00" + this.address + " | ";
+                else if (address < 100) res = "     0" + this.address + " | ";
+                else if (address < 1000) res = "     " + this.address + " | ";
+                res += this.name + " |    ";
+                res += this.type + " |    ";
+                res += this.intVal + " | ";
+                res += this.floatVal + " | ";
                 return res;
             }
         }
@@ -491,12 +493,12 @@ public class secondary extends Tclass {
             }
             public String toString(){
                 String log = "";
-                log += "Operation: " + type.toString() + "\n";
-                log += "WriteTo: " + writeTo + "\n";
-                log += "Operand 1: " + operand1 + "\n";
-                log += "Operator: " + operator  + "\n";
-                log += "Operand 2: " + operand2 + "\n";
-                log += "Block deepness: " + blockDeep + "\n";
+                log += type.toString() + "  |  ";
+                log += writeTo + "  |  ";
+                log += operand1 + " ";
+                log += operator  + " ";
+                log += operand2 + "  |  ";
+                log += blockDeep;
                 return log;
             }
         }
@@ -505,6 +507,7 @@ public class secondary extends Tclass {
             ArrayList<VARIABLE> variablesList;
             ArrayList<LexicError> errorrsList;
             ArrayList<INSTRUCTION> instructionsList;
+            public FileWriter writer;
             
             public Infoblock(){
                 variablesList = new ArrayList<VARIABLE>();
@@ -567,11 +570,9 @@ public class secondary extends Tclass {
                 }
                 return false;
             }
-            public static ArrayList<TOKEN> lexerAnalyse(String filename){
+            public static ArrayList<TOKEN> lexerAnalyse(BufferedReader bufferedReader){
                 int symbol;
-                BufferedReader bufferedReader;
                 try{
-                    bufferedReader = new BufferedReader(new FileReader(filename));
                     String buffer = "";
                     char c;
                     do{
@@ -649,9 +650,6 @@ public class secondary extends Tclass {
                         } 
                     }while(symbol != -1);
                     bufferedReader.close();
-                }
-                catch(FileNotFoundException e){
-                    System.out.print(e);
                 }
                 catch(IOException e){
                     System.out.print(e);
@@ -744,7 +742,6 @@ public class secondary extends Tclass {
     
             private static boolean varExists = false;
     
-            private static ArrayList<Integer> LinesToIgnore = new ArrayList<Integer>();
             private static ArrayList<InstrType> blockLayers = new ArrayList<InstrType>();
             private static boolean expectingElse = false;
             private static TOKEN token;
@@ -797,7 +794,6 @@ public class secondary extends Tclass {
                             ib.errorrsList.add(new LexicError(token, "Unexpected place for type"));
                             continue;
                         }
-                        LinesToIgnore.add(token.codeLine);
                         if (token.value.equals("int")) typeBuffer = TokenType.numInt;
                         else if (token.value.equals("float")) typeBuffer = TokenType.numFloat;
                         if (!getNextToken(TableOfTokens)) break;
@@ -1150,12 +1146,10 @@ public class secondary extends Tclass {
                     }
                 }
                 if (errors.size() == 0){
-                    FileWriter writer;
                     try{
-                        writer = new FileWriter("compiler\\result.txt");
                         for (int i = 0; i < MEM; i++)
-                            writer.write(show_bitset(BitSets[i]) + "\n");
-                        writer.close();
+                            ib.writer.write(show_bitset(BitSets[i]) + "\n");
+                        ib.writer.close();
                     }
                     catch(IOException e){
                         System.out.println(e);

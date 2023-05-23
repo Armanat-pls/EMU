@@ -799,7 +799,6 @@ public class EMU extends secondary{
         private JList<String> list_Instructions_list = new JList<String>(listInstructions_model);
         private JComponent panelInstructions = new JScrollPane(list_Instructions_list);
 
-
         public UIcompiler(){
             super("Компилятор");
             this.setBounds(100,100,600,500);
@@ -872,31 +871,51 @@ public class EMU extends secondary{
         //КНОПКА ЗАПУСКА
         class Button_runEventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
-                MessageBox("Поiхали");
-                ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse("compiler\\test.txt");
-                compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
-                listErrors_model.clear();
-                listTokens_model.clear();
-                listVariables_model.clear();
-                listInstructions_model.clear();
-
-                for (String token : compiler.printTokens(TableOfTokens)) {
-                    listTokens_model.addElement(token);
+                boolean fail = false;
+                if (textBox_chooseSource.getText().isEmpty()){
+                    fail = true;
+                    MessageBox("Не выбран исходный файл");
                 }
-
-                if (ib.errorrsList.size() != 0){
-                    for (String error : compiler.printErrors(ib.errorrsList)) {
-                        listErrors_model.addElement(error);
-                    }
+                if (textBox_chooseTarget.getText().isEmpty()){
+                    fail = true;
+                    MessageBox("Не выбран выходной файл");
                 }
-                else{
-                    compiler.Translator.Compile(ib);
-
-                    for (String variable : compiler.printVariables(ib.variablesList)) {
-                        listVariables_model.addElement(variable);
+                BufferedReader bufferedReader;
+                if (!fail){
+                    try{
+                        bufferedReader = new BufferedReader(new FileReader(textBox_chooseSource.getText()));
+                        ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse(bufferedReader);
+                        compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
+                        listErrors_model.clear();
+                        listTokens_model.clear();
+                        listVariables_model.clear();
+                        listInstructions_model.clear();
+                        for (String token : compiler.printTokens(TableOfTokens)) {
+                            listTokens_model.addElement(token);
+                        }
+                        if (ib.errorrsList.size() != 0){
+                            for (String error : compiler.printErrors(ib.errorrsList)) {
+                                listErrors_model.addElement(error);
+                            }
+                        }
+                        else{
+                            ib.writer = new FileWriter(textBox_chooseTarget.getText());
+                            compiler.Translator.Compile(ib);
+                            listVariables_model.addElement("Адрес | " + "Имя  | " + "Тип | " + "Значение int | " + "Значение float");
+                            for (String variable : compiler.printVariables(ib.variablesList)) {
+                                listVariables_model.addElement(variable);
+                            }
+                            listInstructions_model.addElement("Тип      | " + "Записать В  |  " + "Операция    |  " + "Глубина");
+                            for (String instruction : compiler.printInstructions(ib.instructionsList)) {
+                                listInstructions_model.addElement(instruction);
+                            }
+                        }
                     }
-                    for (String instruction : compiler.printInstructions(ib.instructionsList)) {
-                        listInstructions_model.addElement(instruction);
+                    catch(FileNotFoundException ee){
+                        MessageBox(ee.toString());
+                    }
+                    catch(IOException ee){
+                        MessageBox(ee.toString());
                     }
                 }
             }
