@@ -504,12 +504,14 @@ public class secondary extends Tclass {
         }
     
         public static class Infoblock{
+            ArrayList<TOKEN> TableOfTokens;
             ArrayList<VARIABLE> variablesList;
             ArrayList<LexicError> errorrsList;
             ArrayList<INSTRUCTION> instructionsList;
             public FileWriter writer;
             
             public Infoblock(){
+                TableOfTokens = new ArrayList<TOKEN>();
                 variablesList = new ArrayList<VARIABLE>();
                 errorrsList = new ArrayList<LexicError>();
                 instructionsList = new ArrayList<INSTRUCTION>();
@@ -517,6 +519,8 @@ public class secondary extends Tclass {
         }
         //########### ЛЕКСЕР #############################################################################
         public static class Lexer{
+            private static Infoblock ib = new Infoblock();
+
             static char specials[] = {'+','-','*','/','=','!','<','>','{','}','(',')',};
             static String WORDS[] = {
                 "if",
@@ -553,7 +557,6 @@ public class secondary extends Tclass {
                 operator,
                 nothing
             }
-            static ArrayList<TOKEN> TableOfTokens = new ArrayList<TOKEN>();
             static ReadingWhat state = ReadingWhat.nothing;
             static int codeLine = 1;
             static boolean isEmpty(char c){
@@ -570,7 +573,7 @@ public class secondary extends Tclass {
                 }
                 return false;
             }
-            public static ArrayList<TOKEN> lexerAnalyse(BufferedReader bufferedReader){
+            public static Infoblock lexerAnalyse(BufferedReader bufferedReader){
                 int symbol;
                 try{
                     String buffer = "";
@@ -654,69 +657,70 @@ public class secondary extends Tclass {
                 catch(IOException e){
                     System.out.print(e);
                 }
-                return TableOfTokens;
+
+                return ib;
             }
             private static void makeToken(String buffer, boolean isEOI){
                 if (state == ReadingWhat.number){
-                    TableOfTokens.add(new TOKEN(TokenType.numInt, buffer, codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.numInt, buffer, codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
                 }else if (state == ReadingWhat.numFloat){
-                    TableOfTokens.add(new TOKEN(TokenType.numFloat, Float.valueOf(buffer).toString(), codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.numFloat, Float.valueOf(buffer).toString(), codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
                 }else if (state == ReadingWhat.word){
                     for (String type : TYPES) {
                         if (buffer.toLowerCase().equals(type)){
-                            TableOfTokens.add(new TOKEN(TokenType.type, buffer, codeLine));
-                            if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                            ib.TableOfTokens.add(new TOKEN(TokenType.type, buffer, codeLine));
+                            if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                             return;
                         }
                     }
                     for (String word : WORDS) {
                         if (buffer.toLowerCase().equals(word)){
-                            TableOfTokens.add(new TOKEN(TokenType.word, buffer, codeLine));
-                            if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                            ib.TableOfTokens.add(new TOKEN(TokenType.word, buffer, codeLine));
+                            if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                             return;
                         }
                     }
-                    TableOfTokens.add(new TOKEN(TokenType.varName, buffer, codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.varName, buffer, codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                         return;
     
                 }else if (state == ReadingWhat.operator){
                     for (String operator : OPERATORS) {
                         if (buffer.equals(operator)){
-                            TableOfTokens.add(new TOKEN(TokenType.operator, buffer, codeLine));
-                            if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                            ib.TableOfTokens.add(new TOKEN(TokenType.operator, buffer, codeLine));
+                            if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                             return;
                         }
                     }
                     for (String struct : STRUCTURE) {
                         if (buffer.equals(struct)){
-                            TableOfTokens.add(new TOKEN(TokenType.struct, buffer, codeLine));
-                            if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                            ib.TableOfTokens.add(new TOKEN(TokenType.struct, buffer, codeLine));
+                            if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                             return;
                         }
                     }
                     for (String logic : LOGIC) {
                         if (buffer.equals(logic)){
-                            TableOfTokens.add(new TOKEN(TokenType.logic, buffer, codeLine));
-                            if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                            ib.TableOfTokens.add(new TOKEN(TokenType.logic, buffer, codeLine));
+                            if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                             return;
                         }
                     }
-                    TableOfTokens.add(new TOKEN(TokenType.error, "unknown operator: " + buffer, codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.error, "unknown operator: " + buffer, codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
                 }else if (state == ReadingWhat.nothing){
-                    TableOfTokens.add(new TOKEN(TokenType.error, "no state", codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.error, "no state", codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
                 }
                 if (buffer == "" || buffer == " "){
-                    TableOfTokens.add(new TOKEN(TokenType.error, "no buffer", codeLine));
-                    if (isEOI) TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
+                    ib.TableOfTokens.add(new TOKEN(TokenType.error, "no buffer", codeLine));
+                    if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
                     return;
                 }
             }
@@ -732,7 +736,7 @@ public class secondary extends Tclass {
         public static class SemanticAnalyser{
             private static int addrCount = 0;
     
-            private static Infoblock ib = new Infoblock();
+            
             private static TokenType lasTokenType = TokenType.EoI;
             private static TokenType curTokenType = TokenType.EoI;
             private static String lasTokenValue = "";
@@ -757,7 +761,7 @@ public class secondary extends Tclass {
                 }
                 else return false;
             }
-            private static String CheckOperand(VarTypes targetType, boolean CreateConstant){
+            private static String CheckOperand(VarTypes targetType, boolean CreateConstant, Infoblock ib){
                 VARIABLE tmpVar;
                 boolean checkType = true;
                 if (targetType == VarTypes.NULLE) checkType = false;
@@ -780,11 +784,11 @@ public class secondary extends Tclass {
                 return "";
             }
     
-            public static Infoblock CheckSemantic(ArrayList<TOKEN> TableOfTokens){
+            public static Infoblock CheckSemantic(Infoblock ib){
                 token = new TOKEN(curTokenType, lasTokenValue, 0);
-                while (i < TableOfTokens.size()){
+                while (i < ib.TableOfTokens.size()){
                     varExists = false;
-                    if (!getNextToken(TableOfTokens)) break;
+                    if (!getNextToken(ib.TableOfTokens)) break;
                     if (token.tokenType == TokenType.error){
                         ib.errorrsList.add(new LexicError(token, "Lexic error"));
                         break;
@@ -796,7 +800,7 @@ public class secondary extends Tclass {
                         }
                         if (token.value.equals("int")) typeBuffer = TokenType.numInt;
                         else if (token.value.equals("float")) typeBuffer = TokenType.numFloat;
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType != TokenType.varName){
                             ib.errorrsList.add(new LexicError(token, "Expected varName"));
                             continue;
@@ -811,17 +815,17 @@ public class secondary extends Tclass {
                             continue;
                         }
                         nameBuffer = token.value;
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType != TokenType.operator || !token.value.equals("=")){
                             ib.errorrsList.add(new LexicError(token, "Expected '='"));
                             continue;
                         }
     
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         VarTypes tmp = VarTypes.NULLE;
                         if (typeBuffer == TokenType.numInt) tmp = VarTypes.intE;
                         else if (typeBuffer == TokenType.numFloat) tmp = VarTypes.floatE;
-                        ErrorBuffer = CheckOperand(tmp, false);
+                        ErrorBuffer = CheckOperand(tmp, false, ib);
                         if (!ErrorBuffer.equals("")){
                             ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                             continue;
@@ -833,7 +837,7 @@ public class secondary extends Tclass {
                         else
                             ib.variablesList.add(new VARIABLE(typeBuffer, nameBuffer, token.value, ++addrCount));
                     
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType != TokenType.EoI){
                             ib.errorrsList.add(new LexicError(token, "Expected ;"));
                             continue;
@@ -858,20 +862,20 @@ public class secondary extends Tclass {
                         String operatorBuffer = "0";
                         String operand2Buffer = "0";
                         VarTypes targetType = getVarbyName(ib, token.value).type;       
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType != TokenType.operator || !token.value.equals("=")){
                             ib.errorrsList.add(new LexicError(token, "Expected '='"));
                             continue;
                         }        
-                        if (!getNextToken(TableOfTokens)) break;
-                        ErrorBuffer = CheckOperand(targetType, true);
+                        if (!getNextToken(ib.TableOfTokens)) break;
+                        ErrorBuffer = CheckOperand(targetType, true, ib);
                         if (!ErrorBuffer.equals("")){
                             ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                             continue;
                         }
                         operand1Buffer = token.value;
             
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType == TokenType.EoI){
                             if (ib.errorrsList.size() == 0)
                                 ib.instructionsList.add(new INSTRUCTION(InstrType.asign, writeToBuffer, operand1Buffer, null, null, blockLayers.size()));
@@ -884,15 +888,15 @@ public class secondary extends Tclass {
                         }
                         operatorBuffer = token.value;
     
-                        if (!getNextToken(TableOfTokens)) break;
-                        ErrorBuffer = CheckOperand(targetType, true);
+                        if (!getNextToken(ib.TableOfTokens)) break;
+                        ErrorBuffer = CheckOperand(targetType, true, ib);
                         if (!ErrorBuffer.equals("")){
                             ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                             continue;
                         }
                         operand2Buffer = token.value;
             
-                        if (!getNextToken(TableOfTokens)) break;
+                        if (!getNextToken(ib.TableOfTokens)) break;
                         if (token.tokenType != TokenType.EoI){
                             ib.errorrsList.add(new LexicError(token, "Expected End Of Instruction"));
                             continue;
@@ -907,8 +911,8 @@ public class secondary extends Tclass {
                             continue;
                         }
                         if (blockLayers.get(layer - 1) == InstrType.ifblock){
-                            if (i + 1 < TableOfTokens.size()){
-                                TOKEN tmpToken = TableOfTokens.get(i + 1);
+                            if (i + 1 < ib.TableOfTokens.size()){
+                                TOKEN tmpToken = ib.TableOfTokens.get(i + 1);
                                 if (tmpToken.tokenType == TokenType.word && tmpToken.value.equals("else"))
                                     expectingElse = true;
                             }
@@ -923,7 +927,7 @@ public class secondary extends Tclass {
                                 continue;
                             }
                             expectingElse = false;
-                            if (!getNextToken(TableOfTokens)) break;
+                            if (!getNextToken(ib.TableOfTokens)) break;
                             if (token.tokenType != TokenType.struct || !token.value.equals("{")){
                                 ib.errorrsList.add(new LexicError(token, "Enexpected block opening"));
                                 continue;
@@ -942,13 +946,13 @@ public class secondary extends Tclass {
                                 ib.errorrsList.add(new LexicError(token, "Enexpected word"));
                                 continue;
                             }
-                            if (!getNextToken(TableOfTokens)) break;
+                            if (!getNextToken(ib.TableOfTokens)) break;
                             if (token.tokenType != TokenType.struct || !token.value.equals("(")){
                                 ib.errorrsList.add(new LexicError(token, "Expected logic block opening"));
                                 continue;
                             }
-                            if (!getNextToken(TableOfTokens)) break;
-                            ErrorBuffer = CheckOperand(VarTypes.NULLE, true); // первый запуск без проверки типа
+                            if (!getNextToken(ib.TableOfTokens)) break;
+                            ErrorBuffer = CheckOperand(VarTypes.NULLE, true, ib); // первый запуск без проверки типа
                             if (!ErrorBuffer.equals("")){
                                 ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                                 continue;
@@ -959,27 +963,27 @@ public class secondary extends Tclass {
                             else if (token.tokenType == TokenType.numFloat) tmpType = VarTypes.floatE;
                             else if (token.tokenType == TokenType.varName) tmpType = getVarbyName(ib, token.value).type;
     
-                            if (!getNextToken(TableOfTokens)) break;
+                            if (!getNextToken(ib.TableOfTokens)) break;
                             if (token.tokenType != TokenType.logic){
                                 ib.errorrsList.add(new LexicError(token, "Expected logic operator"));
                                 continue;
                             }
                             operatorBuffer = token.value;
     
-                            if (!getNextToken(TableOfTokens)) break;
-                            ErrorBuffer = CheckOperand(tmpType, true);
+                            if (!getNextToken(ib.TableOfTokens)) break;
+                            ErrorBuffer = CheckOperand(tmpType, true, ib);
                             if (!ErrorBuffer.equals("")){
                                 ib.errorrsList.add(new LexicError(token, ErrorBuffer));
                                 continue;
                             }
                             operand2Buffer = token.value;
     
-                            if (!getNextToken(TableOfTokens)) break;
+                            if (!getNextToken(ib.TableOfTokens)) break;
                             if (token.tokenType != TokenType.struct || !token.value.equals(")")){
                                 ib.errorrsList.add(new LexicError(token, "Expected logic block closing"));
                                 continue;
                             }
-                            if (!getNextToken(TableOfTokens)) break;
+                            if (!getNextToken(ib.TableOfTokens)) break;
                             if (token.tokenType != TokenType.struct || !token.value.equals("{")){
                                 ib.errorrsList.add(new LexicError(token, "Expected block opening"));
                                 continue;

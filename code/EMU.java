@@ -884,13 +884,13 @@ public class EMU extends secondary{
                 if (!fail){
                     try{
                         bufferedReader = new BufferedReader(new FileReader(textBox_chooseSource.getText()));
-                        ArrayList<compiler.TOKEN> TableOfTokens = compiler.Lexer.lexerAnalyse(bufferedReader);
-                        compiler.Infoblock ib = compiler.SemanticAnalyser.CheckSemantic(TableOfTokens); 
+                        compiler.Infoblock ib = compiler.Lexer.lexerAnalyse(bufferedReader);
+                        ib = compiler.SemanticAnalyser.CheckSemantic(ib); 
                         listErrors_model.clear();
                         listTokens_model.clear();
                         listVariables_model.clear();
                         listInstructions_model.clear();
-                        for (String token : compiler.printTokens(TableOfTokens)) {
+                        for (String token : compiler.printTokens(ib.TableOfTokens)) {
                             listTokens_model.addElement(token);
                         }
                         if (ib.errorrsList.size() != 0){
