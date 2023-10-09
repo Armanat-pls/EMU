@@ -884,29 +884,40 @@ public class EMU extends secondary{
                 if (!fail){
                     try{
                         bufferedReader = new BufferedReader(new FileReader(textBox_chooseSource.getText()));
-                        compiler.Infoblock ib = compiler.Lexer.lexerAnalyse(bufferedReader);
-                        ib = compiler.SemanticAnalyser.CheckSemantic(ib); 
+
+                        compiler compiler = new compiler();
+
+                        compiler.Lexer lexer =  compiler.new Lexer();
+                        compiler.SemanticAnalyser analyzer = compiler.new SemanticAnalyser();
+                        compiler.Translator translator = compiler.new Translator();
+
+                        compiler.Infoblock ib = lexer.lexerAnalyse(bufferedReader);
+                        ib = analyzer.CheckSemantic(ib); 
+
                         listErrors_model.clear();
                         listTokens_model.clear();
                         listVariables_model.clear();
                         listInstructions_model.clear();
-                        for (String token : compiler.printTokens(ib.TableOfTokens)) {
+
+                        compiler.compilerUtils printUtils = compiler.new compilerUtils();
+
+                        for (String token : printUtils.printTokens(ib.TableOfTokens)) {
                             listTokens_model.addElement(token);
                         }
                         if (ib.errorrsList.size() != 0){
-                            for (String error : compiler.printErrors(ib.errorrsList)) {
+                            for (String error : printUtils.printErrors(ib.errorrsList)) {
                                 listErrors_model.addElement(error);
                             }
                         }
                         else{
                             ib.writer = new FileWriter(textBox_chooseTarget.getText());
-                            compiler.Translator.Compile(ib);
+                            translator.Compile(ib);
                             listVariables_model.addElement("Адрес | " + "Имя  | " + "Тип | " + "Значение int | " + "Значение float");
-                            for (String variable : compiler.printVariables(ib.variablesList)) {
+                            for (String variable : printUtils.printVariables(ib.variablesList)) {
                                 listVariables_model.addElement(variable);
                             }
                             listInstructions_model.addElement("Тип      | " + "Записать В  |  " + "Операция    |  " + "Глубина");
-                            for (String instruction : compiler.printInstructions(ib.instructionsList)) {
+                            for (String instruction : printUtils.printInstructions(ib.instructionsList)) {
                                 listInstructions_model.addElement(instruction);
                             }
                         }

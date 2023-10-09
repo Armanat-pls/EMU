@@ -372,20 +372,47 @@ public class secondary extends Tclass {
         return 0;
     }
 
-    protected static class compiler {    
-        enum TokenType{
-            type,
-            numInt,
-            numFloat,
-            word,
-            operator,
-            logic,
-            struct,
-            varName,
-            EoI,
-            error
-        }
-        public static class TOKEN{
+
+    enum ReadingWhat{
+        number,
+        word,
+        numFloat,
+        operator,
+        nothing
+    }  
+
+    enum TokenType{
+        type,
+        numInt,
+        numFloat,
+        word,
+        operator,
+        logic,
+        struct,
+        varName,
+        EoI,
+        error
+    }
+    
+    enum VarTypes{
+        floatE,
+        intE,
+        NULLE
+    }
+
+    enum InstrType{
+        ariph,
+        asign,
+        whileblock,
+        ifblock,
+        elseblock,
+        endblock,
+        endprog,
+    }
+
+    protected static class compiler {
+
+        public class TOKEN{
             public TokenType tokenType;
             public String value;
             public int codeLine;
@@ -402,13 +429,8 @@ public class secondary extends Tclass {
                 return num + "| " + tokenType + " : " + value + "\n"; 
             }
         }
-    
-        enum VarTypes{
-            floatE,
-            intE,
-            NULLE
-        }
-        public static class VARIABLE{
+
+        public class VARIABLE{
             public VarTypes type;
             public String name;
             public int intVal;
@@ -446,7 +468,8 @@ public class secondary extends Tclass {
                 return res;
             }
         }
-        public static class LexicError{
+
+        public class LexicError{
             private String error;
             private TOKEN token;
 
@@ -461,17 +484,8 @@ public class secondary extends Tclass {
                 return log;
             }
         }
-        enum InstrType{
-            ariph,
-            asign,
-            whileblock,
-            ifblock,
-            elseblock,
-            endblock,
-            endprog,
-        }
     
-        public static class INSTRUCTION{
+        public class INSTRUCTION{
             InstrType type;
             String writeTo;
             String operand1;
@@ -503,7 +517,7 @@ public class secondary extends Tclass {
             }
         }
     
-        public static class Infoblock{
+        public class Infoblock{
             ArrayList<TOKEN> TableOfTokens;
             ArrayList<VARIABLE> variablesList;
             ArrayList<LexicError> errorrsList;
@@ -518,48 +532,50 @@ public class secondary extends Tclass {
             }
         }
         //########### ЛЕКСЕР #############################################################################
-        public static class Lexer{
-            private static Infoblock ib = new Infoblock();
+        public class Lexer{
 
-            static char specials[] = {'+','-','*','/','=','!','<','>','{','}','(',')',};
-            static String WORDS[] = {
+            Infoblock ib;
+
+            char specials[] = {'+','-','*','/','=','!','<','>','{','}','(',')',};
+            String WORDS[] = {
                 "if",
                 "else",
                 "while",
             };
-            static String TYPES[] = {
+            String TYPES[] = {
                 "int",
                 "float",
             };
-            static String STRUCTURE[] = {
+            String STRUCTURE[] = {
                 "{",
                 "}",
                 "(",
                 ")",
             };
-            static String OPERATORS[] = {
+            String OPERATORS[] = {
                 "=",
                 "+",
                 "-",
                 "*",
                 "/",
             };
-            static String LOGIC[] = {
+            String LOGIC[] = {
                 "<",
                 "<=",
                 "!=",
                 "=="
             };
-            enum ReadingWhat{
-                number,
-                word,
-                numFloat,
-                operator,
-                nothing
+
+            ReadingWhat state;
+            int codeLine;
+
+            Lexer(){
+                ib = new Infoblock();
+                state = ReadingWhat.nothing;
+                codeLine = 1;
             }
-            static ReadingWhat state = ReadingWhat.nothing;
-            static int codeLine = 1;
-            static boolean isEmpty(char c){
+
+            boolean isEmpty(char c){
                 if (c == ' ' || c == '\t') return true;
                 if (c == '\n') {
                     codeLine++;
@@ -567,13 +583,13 @@ public class secondary extends Tclass {
                 }
                 return false;
             }
-            static boolean isSpecial(char c){
+            boolean isSpecial(char c){
                 for (char item : specials) {
                     if (c == item) return true;
                 }
                 return false;
             }
-            public static Infoblock lexerAnalyse(BufferedReader bufferedReader){
+            public Infoblock lexerAnalyse(BufferedReader bufferedReader){
                 int symbol;
                 try{
                     String buffer = "";
@@ -660,7 +676,7 @@ public class secondary extends Tclass {
 
                 return ib;
             }
-            private static void makeToken(String buffer, boolean isEOI){
+            private void makeToken(String buffer, boolean isEOI){
                 if (state == ReadingWhat.number){
                     ib.TableOfTokens.add(new TOKEN(TokenType.numInt, buffer, codeLine));
                     if (isEOI) ib.TableOfTokens.add(new TOKEN(TokenType.EoI, "EoI", codeLine));
@@ -725,7 +741,7 @@ public class secondary extends Tclass {
                 }
             }
         }
-        public static VARIABLE getVarbyName(Infoblock ib, String name){
+        public VARIABLE getVarbyName(Infoblock ib, String name){
             for (VARIABLE var : ib.variablesList) {
                 if (var.name.equals(name)) return var;
             }
@@ -733,25 +749,38 @@ public class secondary extends Tclass {
         }
     
         //########### АНАЛИЗАТОР #############################################################################
-        public static class SemanticAnalyser{
-            private static int addrCount = 0;
+        public class SemanticAnalyser{
+            private int addrCount;
+            private TokenType lasTokenType;
+            private TokenType curTokenType;
+            private String lasTokenValue;
     
-            
-            private static TokenType lasTokenType = TokenType.EoI;
-            private static TokenType curTokenType = TokenType.EoI;
-            private static String lasTokenValue = "";
+            private TokenType typeBuffer;
+            private String nameBuffer;
     
-            private static TokenType typeBuffer;
-            private static String nameBuffer;
+            private boolean varExists = false;
     
-            private static boolean varExists = false;
-    
-            private static ArrayList<InstrType> blockLayers = new ArrayList<InstrType>();
-            private static boolean expectingElse = false;
-            private static TOKEN token;
-            private static int i = -1;  //старт с -1, из-за повышения в методе
-            private static String ErrorBuffer = "";
-            private static boolean getNextToken(ArrayList<TOKEN> TableOfTokens){
+            private ArrayList<InstrType> blockLayers;
+            private boolean expectingElse;
+            private TOKEN token;
+            private int i;
+            private String ErrorBuffer;
+
+            SemanticAnalyser(){
+                addrCount = 0;
+                lasTokenType = TokenType.EoI;
+                curTokenType = TokenType.EoI;
+                lasTokenValue = "";
+                //typeBuffer;
+                //nameBuffer;
+                varExists = false;
+                blockLayers = new ArrayList<InstrType>();
+                expectingElse = false;
+                i = -1;  //старт с -1, из-за повышения в методе
+                ErrorBuffer = "";
+            }
+
+            private boolean getNextToken(ArrayList<TOKEN> TableOfTokens){
                 if (i + 1 < TableOfTokens.size()){
                     lasTokenValue = token.value;
                     token = TableOfTokens.get(++i);
@@ -761,7 +790,7 @@ public class secondary extends Tclass {
                 }
                 else return false;
             }
-            private static String CheckOperand(VarTypes targetType, boolean CreateConstant, Infoblock ib){
+            private String CheckOperand(VarTypes targetType, boolean CreateConstant, Infoblock ib){
                 VARIABLE tmpVar;
                 boolean checkType = true;
                 if (targetType == VarTypes.NULLE) checkType = false;
@@ -784,7 +813,7 @@ public class secondary extends Tclass {
                 return "";
             }
     
-            public static Infoblock CheckSemantic(Infoblock ib){
+            public Infoblock CheckSemantic(Infoblock ib){
                 token = new TOKEN(curTokenType, lasTokenValue, 0);
                 while (i < ib.TableOfTokens.size()){
                     varExists = false;
@@ -1001,14 +1030,22 @@ public class secondary extends Tclass {
         }
         
         //########### ТРАНСЛЯТОР #############################################################################
-        public static class Translator{
-            private static ArrayList<String> errors;
-            private static int MEMcount = 0;
+        public class Translator{
+            private ArrayList<String> errors;
+            private ArrayList<BlockHead> blocks;
+            private int MEMcount;
+            private BitSet[] BitSets;
+            private boolean checkIf;
 
-            private static BitSet[] BitSets = new BitSet[MEM];
-            private static ArrayList<BlockHead> blocks;
-            private static boolean checkIf = false;
-            private static class BlockHead{
+            Translator(){
+                blocks = new ArrayList<BlockHead>();
+                errors = new ArrayList<String>();
+                MEMcount = 0;
+                BitSets = new BitSet[MEM];
+                checkIf = false;
+            }
+
+            private class BlockHead{
                 InstrType type;
                 //поля для while и if-else
                 int conditionPos;   //  Адрес ячейки с првоеркой условия 
@@ -1024,16 +1061,15 @@ public class secondary extends Tclass {
                 }
 
             }
-            private static boolean MEMcntUP(){
+            private boolean MEMcntUP(){
                 if (++MEMcount < MEM) return true;
                 else{
                     errors.add("Memory overload");
                     return false;
                 }
             }
-            public static ArrayList<String> Compile(Infoblock ib){
-                blocks = new ArrayList<BlockHead>();
-                errors = new ArrayList<String>();
+            public ArrayList<String> Compile(Infoblock ib){
+
                 if (ib.variablesList.size() + ib.instructionsList.size() >= MEM + 1){
                     errors.add("Memory overload. varCount: " + ib.variablesList.size() + ", instrCount: " + ib.instructionsList.size());
                     return errors;
@@ -1163,36 +1199,41 @@ public class secondary extends Tclass {
             }
         }
         
-        public static ArrayList<String> printTokens(ArrayList<TOKEN> TableOfTokens){
-            ArrayList<String> tokens = new ArrayList<String>();
-            for (TOKEN token : TableOfTokens) {
-                tokens.add(token.toString());
-            }
-            return tokens;
-        }
-        public static ArrayList<String> printErrors(ArrayList<LexicError> LexicErrors){
-            ArrayList<String> errors = new ArrayList<String>();
-            if (LexicErrors.size() > 0){
-                for (LexicError error : LexicErrors) {
-                    errors.add(error.toString());
+        public class compilerUtils{
+
+            compilerUtils(){};
+        
+            public ArrayList<String> printTokens(ArrayList<TOKEN> TableOfTokens){
+                ArrayList<String> tokens = new ArrayList<String>();
+                for (TOKEN token : TableOfTokens) {
+                    tokens.add(token.toString());
                 }
+                return tokens;
             }
-            return errors;
+            public ArrayList<String> printErrors(ArrayList<LexicError> LexicErrors){
+                ArrayList<String> errors = new ArrayList<String>();
+                if (LexicErrors.size() > 0){
+                    for (LexicError error : LexicErrors) {
+                        errors.add(error.toString());
+                    }
+                }
+                return errors;
+            }
+            public ArrayList<String> printVariables(ArrayList<VARIABLE> VariablesList){
+                ArrayList<String> variables = new ArrayList<String>();
+                for (VARIABLE var : VariablesList) {
+                    variables.add(var.toString());
+                }
+                return variables;
+            }
+            public ArrayList<String> printInstructions(ArrayList<INSTRUCTION> InstructionsList){
+                ArrayList<String> instructions = new ArrayList<String>();
+                for (INSTRUCTION instruction : InstructionsList) {
+                    instructions.add(instruction.toString());
+                }
+                return instructions;
+            } 
         }
-        public static ArrayList<String> printVariables(ArrayList<VARIABLE> VariablesList){
-            ArrayList<String> variables = new ArrayList<String>();
-            for (VARIABLE var : VariablesList) {
-                variables.add(var.toString());
-            }
-            return variables;
-        }
-        public static ArrayList<String> printInstructions(ArrayList<INSTRUCTION> InstructionsList){
-            ArrayList<String> instructions = new ArrayList<String>();
-            for (INSTRUCTION instruction : InstructionsList) {
-                instructions.add(instruction.toString());
-            }
-            return instructions;
-        }        
     }   
 
 }
