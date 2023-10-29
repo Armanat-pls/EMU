@@ -842,7 +842,7 @@ public class EMU extends secondary{
         class Button_chooseSourceEventListener implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 JFileChooser source_fileChooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("Текстовые файлы", "txt");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Файл emul", "emul");
                 source_fileChooser.setFileFilter(filter);
                 source_fileChooser.setCurrentDirectory(new File(Paths.get("").toAbsolutePath().toString()));
                 int ret = source_fileChooser.showDialog(null, "Открыть файл");
