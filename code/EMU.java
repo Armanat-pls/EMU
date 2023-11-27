@@ -28,7 +28,9 @@ public class EMU extends secondary{
         private JButton button_clearRAM = new JButton("<html><div align='center'>Очистить память</div></html>");
         private JButton button_fillRAM = new JButton("<html><div align='center'>Считать файл памяти</div></html>");
         private JButton button_dumpRAM = new JButton("<html><div align='center'>Дамп памяти</div></html>");
-        private JButton button_RunCompiler = new JButton("<html><div align='center'>Компилятор</div></html>");     
+        private JButton button_RunCompiler = new JButton("<html><div align='center'>Компилятор</div></html>");  
+        private JButton button_Auth = new JButton("<html><div align='center'>Авторизация</div></html>");    
+        private JButton button_Auth_exit = new JButton("<html><div align='center'>Выйти</div></html>");   
 
         //поле вывода СЧАК
         private JLabel label_CANT_out = new JLabel("СЧАК");
@@ -86,6 +88,18 @@ public class EMU extends secondary{
         private JButton button_ramwrite_data = new JButton("Ввод"); 
         private JRadioButton rBut_type_int = new JRadioButton("integer");
         private JRadioButton rBut_type_float = new JRadioButton("float");
+
+
+
+
+        private JButton button_login = new JButton("<html><div align='center'>Вход</div></html>");
+
+        //текстовые поля
+        private JLabel label_login = new JLabel("Логин");
+        private JLabel label_password = new JLabel("Пароль");
+        private JTextField textBox_login = new JTextField();
+        private JPasswordField textBox_password = new JPasswordField();
+        private JLabel label_login_error = new JLabel("Неверный логин или пароль");
         
         public UI() {
             super("Учебный эмулятор ЭВМ " + VER);
@@ -146,6 +160,12 @@ public class EMU extends secondary{
 
             button_RunCompiler.setBounds(baseX  + 360, baseY, 110, 65);
             button_RunCompiler.addActionListener(new Button_RunCompiler_EventListener());
+
+            button_Auth.setBounds(baseX  + 480, baseY, 110, 65);
+            button_Auth.addActionListener(new Button_Auth_EventListener());
+
+            button_Auth_exit.setBounds(baseX  + 480, baseY, 110, 65);
+            button_Auth_exit.addActionListener(new Button_Auth_exit_EventListener());
 
 
 //======================================================
@@ -314,6 +334,42 @@ public class EMU extends secondary{
             container.add(button_fillRAM);
             container.add(button_dumpRAM);
             container.add(button_RunCompiler);
+            container.add(button_Auth);
+            container.add(button_Auth_exit);
+
+
+
+
+            logout();
+
+            baseX = 430;
+            baseY = 430;
+            label_login.setBounds(baseX, baseY, 200, 25);
+            textBox_login.setBounds(baseX,baseY + 20, 200, 25);
+            label_password.setBounds(baseX, baseY + 45, 200, 25);
+            textBox_password.setBounds(baseX,baseY + 65, 200, 25);
+
+            label_login_error.setBounds(baseX, baseY + 85, 200, 25);
+
+            button_login.setBounds(baseX + 220, baseY + 26, 85, 55); 
+            button_login.addActionListener(new button_login_EventListener());
+
+
+            container.add(label_login);
+            container.add(textBox_login);
+            container.add(label_password);
+            container.add(textBox_password);
+            container.add(label_login_error);
+
+            container.add(button_login);
+
+            label_login.setVisible(false);
+            textBox_login.setVisible(false);
+            label_password.setVisible(false);
+            textBox_password.setVisible(false);
+            button_login.setVisible(false);
+            label_login_error.setVisible(false);
+
             refreshUI();                 
         }
         
@@ -403,6 +459,81 @@ public class EMU extends secondary{
             }
         }
 
+        //КНОПКА ФЕЙКА АВТОРИЗАЦИИ
+        class Button_Auth_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                button_Auth.setVisible(false);
+                label_login.setVisible(true);
+                textBox_login.setVisible(true);
+                label_password.setVisible(true);
+                textBox_password.setVisible(true);
+                button_login.setVisible(true);
+                //label_login_error.setVisible(true);
+            }
+        }
+
+        class button_login_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                boolean login_successful = true;
+                
+                if (textBox_login.getText().isEmpty()){
+                    login_successful = false;
+                    MessageBox("Не введён логин");
+                    return;
+                }
+                if (textBox_password.getText().isEmpty()){
+                    login_successful = false;
+                    MessageBox("Не введён пароль");
+                    return;
+                }
+
+                if (
+                    textBox_login.getText().equals("user") &&
+                    textBox_password.getText().equals("123456")
+                ) login_successful = true;
+                else login_successful = false;
+
+                if (login_successful){
+                    login();
+                    label_login.setVisible(false);
+                    textBox_login.setVisible(false);
+                    label_password.setVisible(false);
+                    textBox_password.setVisible(false);
+                    button_login.setVisible(false);
+                    label_login_error.setVisible(false);
+                }
+                else{
+                    label_login_error.setVisible(true);
+                }
+            }
+        }
+
+        //КНОПКА ФЕЙКА АВТОРИЗАЦИИ
+        class Button_Auth_exit_EventListener implements ActionListener {
+            public void actionPerformed(ActionEvent e) {
+                logout();
+            }
+        }
+
+        public void login(){
+            button_Auth.setVisible(false);
+            button_Auth_exit.setVisible(true);
+
+            button_RunCompiler.setEnabled(true);
+            Rbutton_RAN_Cell_cng_comm.setEnabled(true);
+            Rbutton_RAN_Cell_cng_data.setEnabled(true);
+        }
+        protected void logout(){
+            button_Auth.setVisible(true);
+            button_Auth_exit.setVisible(false);
+
+            Rbutton_RAN_Cell_cng_clean.setSelected(true);
+
+            button_RunCompiler.setEnabled(false);
+            
+            Rbutton_RAN_Cell_cng_comm.setEnabled(false);
+            Rbutton_RAN_Cell_cng_data.setEnabled(false);
+        }
 
         //КНОПКА ВЫСТАВЛЕНИЯ СЧАК
         class Button_SETCANT_EventListener implements ActionListener {
@@ -753,6 +884,7 @@ public class EMU extends secondary{
             button_dumpRAM.setEnabled(state);
             button_fillRAM.setEnabled(state);
             button_RunCompiler.setEnabled(state);
+            button_Auth.setEnabled(state);
             button_ramwrite_clean.setEnabled(state);
             button_ramwrite_coms.setEnabled(state);
             button_ramwrite_data.setEnabled(state);
