@@ -15,41 +15,26 @@
                 <div>СЧАК</div>
                 <div>Ячейка на исполнение</div>
                 <div>
-                    <input disabled>
+                    <input type="text" id = "textBox_CANT" disabled>
                 </div>
                 <div>
-                    <input disabled>
+                    <input type="text" id = "textBox_CURcell"  disabled>
                 </div>
             </div>
             <div class = "container-REGISTER container-cnt_reg">
                 <div></div>
                 <div>Регистр АЛУ</div>
                 <div>
-                    <input disabled>
+                    <input type="text" id = "textBox_RO" disabled>
                 </div>
                 <div>
-                    <input disabled>
+                    <input type="text" id = "textBox_ALU" disabled>
                 </div>
             </div>
             <div class = "container-RAM">
                 RAM
                 <div class = "RAM-list">
-                    <select size="10">
-                        <option>Ячейка 1</option>
-                        <option>Ячейка 2</option>
-                        <option>Ячейка 3</option>
-                        <option>Ячейка 4</option>
-                        <option>Ячейка 5</option>
-                        <option>Ячейка 6</option>
-                        <option>Ячейка 7</option>
-                        <option>Ячейка 8</option>
-                        <option>Ячейка 9</option>
-                        <option>Ячейка 10</option>
-                        <option>Ячейка 11</option>
-                        <option>Ячейка 12</option>
-                        <option>Ячейка 13</option>
-                        <option>Ячейка 14</option>
-                        <option>Ячейка 15</option>
+                    <select size="10" id = "select_RAM_list" onchange="RAM_listChange()">
                     </select>
                 </div>
             </div>
@@ -61,7 +46,7 @@
                         Выберите
                     </div>
                     <div>
-                        <input type="number">
+                        <input type="number" id = "RAM_choser" min="0" value="0" step="1" onchange="spinnerChange()">
                     </div>
                 </div>
                 <button>Установить счётчик</button>
@@ -73,46 +58,46 @@
                 <div class = "container-input-inner">
                     <div class = "container-input-left">
                         <div>
-                            <input type = "radio" name="input-type" id = "input-type-radio-clean">
-                            <label for="input-type-radio-clean">Прямой ввод</label>
+                            <input type = "radio" name="input-type" id = "input_type_radio_clean" onchange="change_input_box()" checked>
+                            <label for="input-type-radio-clean" onclick="set_radio_input_type('clean')">Прямой ввод</label>
                         </div>
                         <div>
-                            <input type = "radio" name="input-type" id = "input-type-radio-comm">
-                            <label for="input-type-radio-comm">Команда</label>
+                            <input type = "radio" name="input-type" id = "input_type_radio_comm" onchange="change_input_box()">
+                            <label for="input-type-radio-comm" onclick="set_radio_input_type('comm')">Команда</label>
                         </div>
                         <div>
-                            <input type = "radio" name="input-type" id = "input-type-radio-data">
-                            <label for="input-type-radio-data">Данные</label>
+                            <input type = "radio" name="input-type" id = "input_type_radio_data" onchange="change_input_box()">
+                            <label for="input-type-radio-data" onclick="set_radio_input_type('data')">Данные</label>
                         </div>
                         <div>
-                            <input type = "checkbox" name="input-ALU" id = "input-ALU">
+                            <input type = "checkbox" name="input-ALU" id = "input_ALU">
                             <label for="input-ALU">Запись в регистр АЛУ</label>
                         </div>
                         
                     </div>
                     <div class = "container-input-right">
-                        <div id = "input-zone-clean">
-                            <input type="text" id = "input-ramwrite-clean" style="display: block;" maxlength="32">
+                        <div id = "input_zone_clean" style="display: block">
+                            <input type="text" id = "input_ramwrite_clean" style="display: block;" maxlength="32">
                             <label for="input-ramwrite-clean" style="display: block;">Битовый набор без пробелов (32bit)</label>
                         </div>
-                        <div id = "input-zone-comm" style="display: none">
-                            <input type="text" id = "input-ramwrite-comm-c">
-                            <input type="number" id = "input-ramwrite-comm-addr">
+                        <div id = "input_zone_comm" style="display: none">
+                            <input type="text" id = "input_ramwrite_comm_c">
+                            <input type="number" id = "input_ramwrite_comm_addr">
                             <label for="input-ramwrite-comm-c" style="display: block;">Команда; адрес операнда</label>
                         </div>
-                        <div id = "input-zone-data"  style="display: none">
+                        <div id = "input_zone_data"  style="display: none">
                             <div class = "container-input-zone-data">
                                 <div>
-                                    <input type="text" id = "input-ramwrite-data" style="display: block;">
+                                    <input type="text" id = "input_ramwrite_data" style="display: block;">
                                     <label for="input-ramwrite-data" style="display: block;">Десятичное число</label>
                                 </div>
                                 <div>
                                     <div>
-                                        <input type = "radio" name="input-data-type" id = "input-data-type-radio-integer">
+                                        <input type = "radio" name="input-data-type" id = "input_data_type_radio_integer">
                                         <label for="input-data-type-radio-integer">integer</label>
                                     </div>
                                     <div>
-                                        <input type = "radio" name="input-data-type" id = "input-data-type-radio-float">
+                                        <input type = "radio" name="input-data-type" id = "input_data_type_radio_float">
                                         <label for="input-data-type-radio-float">float</label>
                                     </div>
                                 </div>
@@ -128,16 +113,16 @@
                 <div class = "container-output-inner">
                     <div>
                         <label for="output-comm-c">Команда</label>
-                        <input type="text" id = "output-comm-c" disabled>
-                        <input type="text" id = "output-comm-addr" disabled>
+                        <input type="text" id = "output_comm_c" disabled>
+                        <input type="text" id = "output_comm_addr" disabled>
                     </div>
                     <div>
                         <label for="output-integer">Целое</label>
-                        <input type="text" id = "output-integer" disabled>
+                        <input type="text" id = "output_integer" disabled>
                     </div>
                     <div>
                         <label for="output-float">Дробное</label>
-                        <input type="text" id = "output-float" disabled>
+                        <input type="text" id = "output_float" disabled>
                     </div>
                 </div>
             </div>
