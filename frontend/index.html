@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Учебный эмулятор ЭВМ</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="script.js"></script>
+</head>
+<body>
+    <div class = "content-zone">
+        <div class = "left-side">
+            <div class = "container-COUNT container-cnt_reg">
+                <div>СЧАК</div>
+                <div>Ячейка на исполнение</div>
+                <div>
+                    <input disabled>
+                </div>
+                <div>
+                    <input disabled>
+                </div>
+            </div>
+            <div class = "container-REGISTER container-cnt_reg">
+                <div></div>
+                <div>Регистр АЛУ</div>
+                <div>
+                    <input disabled>
+                </div>
+                <div>
+                    <input disabled>
+                </div>
+            </div>
+            <div class = "container-RAM">
+                RAM
+                <div class = "RAM-list">
+                    <select size="10">
+                        <option>Ячейка 1</option>
+                        <option>Ячейка 2</option>
+                        <option>Ячейка 3</option>
+                        <option>Ячейка 4</option>
+                        <option>Ячейка 5</option>
+                        <option>Ячейка 6</option>
+                        <option>Ячейка 7</option>
+                        <option>Ячейка 8</option>
+                        <option>Ячейка 9</option>
+                        <option>Ячейка 10</option>
+                        <option>Ячейка 11</option>
+                        <option>Ячейка 12</option>
+                        <option>Ячейка 13</option>
+                        <option>Ячейка 14</option>
+                        <option>Ячейка 15</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class = "right-side">
+            <div class = "container-controls">
+                <div class = "container-CANT_select">
+                    <div>
+                        Выберите
+                    </div>
+                    <div>
+                        <input type="number">
+                    </div>
+                </div>
+                <button>Установить счётчик</button>
+                <button>Выполнить текущую ячейку</button>
+                <button>Выполнить программу</button>
+            </div>
+            <div class = "container-input">
+                Запись ячейки
+                <div class = "container-input-inner">
+                    <div class = "container-input-left">
+                        <div>
+                            <input type = "radio" name="input-type" id = "input-type-radio-clean">
+                            <label for="input-type-radio-clean">Прямой ввод</label>
+                        </div>
+                        <div>
+                            <input type = "radio" name="input-type" id = "input-type-radio-comm">
+                            <label for="input-type-radio-comm">Команда</label>
+                        </div>
+                        <div>
+                            <input type = "radio" name="input-type" id = "input-type-radio-data">
+                            <label for="input-type-radio-data">Данные</label>
+                        </div>
+                        <div>
+                            <input type = "checkbox" name="input-ALU" id = "input-ALU">
+                            <label for="input-ALU">Запись в регистр АЛУ</label>
+                        </div>
+                        
+                    </div>
+                    <div class = "container-input-right">
+                        <div id = "input-zone-clean">
+                            <input type="text" id = "input-ramwrite-clean" style="display: block;" maxlength="32">
+                            <label for="input-ramwrite-clean" style="display: block;">Битовый набор без пробелов (32bit)</label>
+                        </div>
+                        <div id = "input-zone-comm" style="display: none">
+                            <input type="text" id = "input-ramwrite-comm-c">
+                            <input type="number" id = "input-ramwrite-comm-addr">
+                            <label for="input-ramwrite-comm-c" style="display: block;">Команда; адрес операнда</label>
+                        </div>
+                        <div id = "input-zone-data"  style="display: none">
+                            <div class = "container-input-zone-data">
+                                <div>
+                                    <input type="text" id = "input-ramwrite-data" style="display: block;">
+                                    <label for="input-ramwrite-data" style="display: block;">Десятичное число</label>
+                                </div>
+                                <div>
+                                    <div>
+                                        <input type = "radio" name="input-data-type" id = "input-data-type-radio-integer">
+                                        <label for="input-data-type-radio-integer">integer</label>
+                                    </div>
+                                    <div>
+                                        <input type = "radio" name="input-data-type" id = "input-data-type-radio-float">
+                                        <label for="input-data-type-radio-float">float</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button>Ввод</button>
+                    </div>
+
+                </div>
+            </div>
+            <div class = "container-output">
+                Содержимое ячейки
+                <div class = "container-output-inner">
+                    <div>
+                        <label for="output-comm-c">Команда</label>
+                        <input type="text" id = "output-comm-c" disabled>
+                        <input type="text" id = "output-comm-addr" disabled>
+                    </div>
+                    <div>
+                        <label for="output-integer">Целое</label>
+                        <input type="text" id = "output-integer" disabled>
+                    </div>
+                    <div>
+                        <label for="output-float">Дробное</label>
+                        <input type="text" id = "output-float" disabled>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class = "bottom-row">
+        <button>Очистить память</button>
+        <button>Считать файл памяти</button>
+        <button>Дамп памяти</button>
+        <button>Компилятор</button>
+    </div>
+</body>
+</html>
